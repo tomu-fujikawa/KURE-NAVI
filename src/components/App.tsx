@@ -5,6 +5,8 @@ import Droppable from './Droppable';
 import Draggable from './Draggable';
 import { useState,useEffect } from 'react';
 import Papa from "papaparse";
+import { Button } from './ui/button';
+import TimePicker from './TimePicker';
 
 interface data {
   location_name: string;
@@ -15,6 +17,7 @@ interface data {
 interface family {
   parentId?: string;
   child?: data;
+  time?: string;
 }
 
 export default function Page({label}:any) {
@@ -70,61 +73,101 @@ export default function Page({label}:any) {
       setData(data);
 
   }, []);
-  const containers = ['A', 'B', 'C'];
+  // const containers = ['A', 'B', 'C'];
   const [family, setFamily] = useState<family[]>([]);
+  const [containers, setContainers] = useState<string[]>(['A']);
 
   console.log("data",data);
 console.log("choices",choices);
-  
+  const addPlan = () => {
+    const nextLetter = String.fromCharCode(65 + containers.length); // A, B, C...
+    setContainers([...containers, nextLetter]);
+  }
+  const deletePlan = () => {
+    if (containers.length > 1) {
+      const newContainers = containers.slice(0, -1);
+      // 削除されるコンテナに関連するfamilyアイテムを元のchoicesに戻す
+      const removedContainer = containers[containers.length - 1];
+      const removedItems = family.filter(item => item.parentId === removedContainer);
+      
+      setFamily(family.filter(item => item.parentId !== removedContainer));
+      setChoices((prevChoices: any) => [...prevChoices, ...removedItems.map((item: any) => item.child)]);
+      setContainers(newContainers);
+    }
+  }
   return (
-    <DndContext onDragEnd={handleDragEnd}>
-      <div className='flex flex-col justify-center items-center w-screen h-screen gap-8'>
-         {/* ドロップするコンテナ３個横並び */}
-        <div className='flex'>
-          {containers.map((id) => (
-            <Droppable key={id} id={id} isOverAddClass="bg-green-700">
-              <div className='w-52 h-24 border-2 border-dashed border-gray-100/50 flex justify-center items-center'>
-                {family.length > 0 ? (
+    <div>
+      <Button onClick={addPlan}>
+        追加
+      </Button>
+      <Button onClick={deletePlan}>
+        削除
+      </Button>
+
+<DndContext onDragEnd={handleDragEnd}>
+  <div className='flex flex-col items-center w-screen h-screen gap-8'>
+    <div className='w-full overflow-x-auto'>
+      <div className='flex min-w-min gap-4 p-8'>
+        {containers.map((id) => (
+          <Droppable key={id} id={id} isOverAddClass="bg-green-700">
+            <div className='relative w-52 min-h-[8rem] border-2 border-dashed border-gray-100/50'>
+              {family.length > 0 ? (
                 (() => {
-                  const foundItem = family.find((familyItem: any) => familyItem.parentId === id);
+                  const foundItem = family.find((item) => item.parentId === id);
                   return foundItem ? (
-                    <Draggable key={foundItem.child?.location_name} id={String(foundItem.child?.location_name)}>
-                    <div key={foundItem.child?.location_name} id={foundItem.child?.location_name} className='cursor-grab w-48 h-20 bg-blue-200 flex justify-center items-center'>
-                      {foundItem.child?.location_name}
+                    <div className="flex flex-col items-center">
+                      <div className="absolute -top-8 w-full flex justify-center">
+                        <TimePicker 
+                          onChange={(time) => handleTimeChange(foundItem.child?.location_name || '', time)} 
+                        />
+                      </div>
+                      <Draggable key={foundItem.child?.location_name || ''} id={foundItem.child?.location_name || ''}>
+                        <div key={foundItem.child?.location_name || ''} id={foundItem.child?.location_name || ''} 
+                          className='cursor-grab w-48 h-20 bg-blue-200 flex justify-center items-center m-1'>
+                          <div className="flex flex-col items-center">
+                            <span>{foundItem.child?.location_name}</span>
+                            {foundItem.time && (
+                              <span className="text-sm text-gray-600">{foundItem.time}</span>
+                            )}
+                          </div>
+                        </div>
+                      </Draggable>
                     </div>
-                  </Draggable>
                   ) : 'Drop here';
                 })()
               ) : 'Drop here'}
-              </div>
-            </Droppable>
-          ))}
-        </div>
-                 {/* ドラッグするアイテム */}
-                 <div className='flex h-20'>
-          {choices?.map((items:any)=>{
-            return(
-              <Draggable key={items.location_name} id={items.location_name}>
-              <div key={items.location_name} id={items.location_name} className='cursor-grab w-48 h-20 bg-blue-200 flex justify-center items-center'>
-                {items.location_name}
-              </div>
-            </Draggable>
-            )
-          })}
-        </div>
+            </div>
+          </Droppable>
+        ))}
       </div>
+    </div>
+             {/* ドラッグするアイテム */}
+             <div className='flex h-20'>
+      {choices?.map((items:any)=>{
+        return(
+          <Draggable key={items.location_name} id={items.location_name}>
+            <div key={items.location_name} id={items.location_name} className='cursor-grab w-48 h-20 bg-blue-200 flex justify-center items-center'>
+              {items.location_name}
+            </div>
+          </Draggable>
+        )
+      })}
+    </div>
+  </div>
 
-      <div>
-            <h1>CSV Data</h1>
-            <ul>
-                {data.map((spot:any, index:number) => (
-                    <li key={index}>
-                        {spot.location_name} - {spot.latitude} - {spot.longitude} - {spot.image_url}
-                    </li>
-                ))}
-            </ul>
-        </div>
-    </DndContext>
+  <div>
+        <h1>CSV Data</h1>
+        <ul>
+            {data.map((spot:any, index:number) => (
+                <li key={index}>
+                    {spot.location_name} - {spot.latitude} - {spot.longitude} - {spot.image_url}
+                </li>
+            ))}
+        </ul>
+    </div>
+</DndContext>
+    </div>
+
   );
   
   function handleDragEnd(event: DragEndEvent) {
@@ -176,4 +219,13 @@ console.log("choices",choices);
       }
     }
   }
+
+  const handleTimeChange = (itemId: string, time: string) => {
+    setFamily(family.map(item => {
+      if (item.child?.location_name === itemId) {
+        return { ...item, time };
+      }
+      return item;
+    }));
+  };
 }
