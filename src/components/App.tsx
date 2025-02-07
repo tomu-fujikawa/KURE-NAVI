@@ -10,7 +10,7 @@ import TimePicker from './TimePicker';
 import TimePickerContainer from './TimePickerContainer';
 import { Plus, Minus, PlusCircle, Trash2, MinusCircle } from 'lucide-react';
 import db from '../firebase';
-import { collection, getDocs } from "firebase/firestore"; 
+import { collection, getDocs, addDoc } from "firebase/firestore";  
 
 
 interface data {
@@ -44,6 +44,7 @@ export default function Page({label}:any) {
     const ROW_INCREMENT = 3;
     const [visibleRows, setVisibleRows] = useState(INITIAL_ROWS);
     const [sightseeingCourse, setSightseeingCourse] = useState<any[]>([]);
+    const [tripTitle, setTripTitle] = useState("");
     
     useEffect(() => {
       fetch("/locations2.csv")
@@ -178,7 +179,6 @@ export default function Page({label}:any) {
     buttonContainer: {
       display: 'flex',
       gap: '1rem',
-      marginBottom: '2rem',
       justifyContent: 'center',
     },
     addButton: {
@@ -741,18 +741,46 @@ const filteredChoices = useMemo(() => {
       <div style={styles.card} className="container-card">
         <h1 style={styles.title as React.CSSProperties}>Kure-NAVI</h1>
         
-        
-        
-        <div style={styles.buttonContainer}>
-          <Button onClick={addPlan} style={styles.addButton}>
-            <Plus style={{ width: '1.25rem', height: '1.25rem' }} />
-            プランを追加
-          </Button>
-          <Button onClick={deletePlan} style={styles.deleteButton}>
-            <Minus style={{ width: '1.25rem', height: '1.25rem' }} />
-            プランを削除
-          </Button>
+        <div style={{display:"flex", flexDirection:"row", alignItems:"center",gap:"52px", paddingLeft:"16px"}}>
+          <div style={{display:"flex", flexDirection:"row", alignItems:"center",gap:"40px", paddingLeft:"16px"}}>
+                    {/* 🔍 タイトル入力欄 */}
+            <input
+              type="text"
+              placeholder="旅のタイトルを入力"
+              value={tripTitle}
+              onChange={(e) => setTripTitle(e.target.value)}
+              style={{
+                padding: "0.5rem",
+                fontSize: "1rem",
+                borderRadius: "8px",
+                border: "2px solid var(--kure-blue)",
+                outline: "none",
+                width: "350px",
+              }}
+            />
+            <div style={styles.buttonContainer}>
+              <Button onClick={addPlan} style={styles.addButton}>
+                <Plus style={{ width: '1.25rem', height: '1.25rem' }} />
+                プランを追加
+              </Button>
+              <Button onClick={deletePlan} style={styles.deleteButton}>
+                <Minus style={{ width: '1.25rem', height: '1.25rem' }} />
+                プランを削除
+              </Button>
+            </div>
+          </div>
+          <Button onClick={deletePlan} style={{
+            padding: "0.5rem 1rem",
+            borderRadius: "8px",
+            border: "none",
+            outline: "none",
+            width: "200px",
+            height: "100px",
+          }}>
+                プランを登録
+              </Button>
         </div>
+ 
 
         <DndContext onDragEnd={handleDragEnd}>
           <div style={styles.mainContent}>
@@ -970,19 +998,21 @@ const filteredChoices = useMemo(() => {
                 {/* フィルターと検索のコンテナ */}
               </div>
         <div style={styles.sightseeing_courseContainer}>
-  {sightseeingCourse.map((course: any, courseIndex: number) => (
-    course.destinations.map((destination: any, index: number) => (
+        {sightseeingCourse.map((course: any, courseIndex: number) => (
+  <div key={"course" + courseIndex}>
+    <h2 style={{fontSize:"24px", fontWeight:"bold", color:"var(--kure-blue)"}}>{course.title}</h2>
+    {course.destinations.map((destination: any, index: number) => (
       <div key={"sightseeing" + courseIndex + index} style={styles.sightseeing_card}>
-      <img 
-        src={destination?.image_url} 
-        alt={destination.title} 
-        style={styles.sightseeing_cardImage as React.CSSProperties} 
-      />
-      <div style={styles.sightseeing_cardTitle}>{destination?.location_name}</div>
-    </div>
-    ))
-    
-  ))}
+        <img 
+          src={destination?.image_url} 
+          alt={destination.title} 
+          style={styles.sightseeing_cardImage as React.CSSProperties} 
+        />
+        <div style={styles.sightseeing_cardTitle}>{destination?.location_name}</div>
+      </div>
+    ))}
+  </div>
+))}
 </div>
         </div>
 
