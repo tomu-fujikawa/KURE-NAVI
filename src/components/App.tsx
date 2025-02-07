@@ -3,7 +3,7 @@
 import { DndContext, DragEndEvent, UniqueIdentifier } from '@dnd-kit/core';
 import Droppable from './Droppable';
 import Draggable from './Draggable';
-import { useState,useEffect } from 'react';
+import { useState,useEffect, useMemo } from 'react';
 import Papa from "papaparse";
 import { Button } from './ui/button';
 import TimePicker from './TimePicker';
@@ -15,6 +15,8 @@ interface data {
   latitude: number;
   longitude: number;
   image_url: string;
+  explanation: string;
+  tag: string;
 }
 interface family {
   parentId?: string;
@@ -22,11 +24,17 @@ interface family {
   time?: string;
 }
 
+const AVAILABLE_TAGS = ['歴史', '自然', '建築', '庭園', '神社', '絶景', 'グルメ', '温泉'] as const;
+type Tag = typeof AVAILABLE_TAGS[number];
+
 export default function Page({label}:any) {
     const [data, setData] = useState<data[]>([]);
     const [choices, setChoices] = useState<any>();
+    const [selectedTags, setSelectedTags] = useState<Tag[]>([]);
+    const [family, setFamily] = useState<family[]>([]);
+    const [containers, setContainers] = useState<string[]>(['A']);
     useEffect(() => {
-      fetch("/locations.csv")
+      fetch("/locations2.csv")
           .then((response) => response.text())
           .then((csvText) => {
               const parsedData = Papa.parse<data>(csvText, {
@@ -76,9 +84,7 @@ export default function Page({label}:any) {
       // setData(data);
 
   }, []);
-  // const containers = ['A', 'B', 'C'];
-  const [family, setFamily] = useState<family[]>([]);
-  const [containers, setContainers] = useState<string[]>(['A']);
+  // const containers = ['A', 'B', 'C']
   const addPlan = () => {
     const nextLetter = String.fromCharCode(65 + containers.length); // A, B, C...
     setContainers([...containers, nextLetter]);
@@ -139,11 +145,11 @@ export default function Page({label}:any) {
     },
     choicesContainer: {
       display: 'grid',
-      gridTemplateColumns: 'repeat(5, 1fr)', // 5列のグリッド
+      gridTemplateColumns: 'repeat(5, 200px)', // ✅ 5列固定、カードの幅を一定にする
+      justifyContent: 'center', // ✅ 5個未満でも中央配置
       gap: '1rem',
       padding: '1rem',
-      width: '100%',
-      transition: 'all 0.3s ease', // アニメーション効果を追加
+      transition: 'all 0.3s ease',
     },
     draggableItemInChoices: {
       padding: '0.5rem',
@@ -156,18 +162,19 @@ export default function Page({label}:any) {
     },
     cardImage: {
       width: '100%',
-      height: '150px',
-      objectFit: 'cover' as const,
+      height: '65%', // ✅ カードの高さに対して50%に統一
+      objectFit: 'cover', // ✅ 画像が適切にトリミングされる
       borderRadius: '0.25rem',
     },
     cardTitle: {
       fontSize: '0.875rem',
       fontWeight: '500',
       color: 'white',
-      flex: 1,
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'center',
+      overflow: 'hidden',
+      textOverflow: 'ellipsis',
+      whiteSpace: 'nowrap' as const,
+      width: '100%',
+      padding: '0 0.5rem',
     },
     title: {
       fontSize: '1.875rem',
@@ -229,11 +236,8 @@ export default function Page({label}:any) {
       display: 'flex',
       flexDirection: 'column' as const,
       gap: '0.5rem',
-      height: '200px',
+      height: '200px', // ✅ カード全体の高さ
       transition: 'transform 0.3s ease',
-      ':hover': {
-        transform: 'translateY(-2px)',
-      }
     },
     itemText: {
       display: 'flex',
@@ -526,10 +530,90 @@ export default function Page({label}:any) {
     })));
   };
 
+  const filteredChoices = useMemo(() => {
+    if (!choices || selectedTags.length === 0) return choices;
+  
+    console.log('=== フィルタリング実行 ===');
+    console.log('🎯 選択されたタグ:', selectedTags);
+    console.log('📍 フィルタリング前のデータ数:', choices.length);
+    
+    const filtered = choices.filter((item: data) => {
+      if (!item || !item.tag) return false;
+      
+      const itemTags = item.tag.split(', ');
+      // 選択されたタグをすべて含むものだけを表示
+      return selectedTags.every(tag => itemTags.includes(tag));
+    });
+    
+    console.log('✅ フィルタリング後のデータ数:', filtered.length);
+    console.log('📊 フィルタリング結果:', filtered.map((item: data) => ({
+      観光地名: item.location_name,
+      タグ: item.tag
+    })));
+    
+    return filtered;
+  }, [choices, selectedTags]);
+
+  const TagFilter = () => {
+    const styles = {
+      container: {
+        display: 'flex',
+        gap: '0.5rem',
+        flexWrap: 'wrap' as const,
+        marginBottom: '1rem',
+        justifyContent: 'center',
+      },
+      tag: {
+        padding: '0.5rem 1rem',
+        borderRadius: '9999px',
+        fontSize: '0.875rem',
+        cursor: 'pointer',
+        transition: 'all 0.2s ease',
+      },
+      activeTag: {
+        backgroundColor: 'var(--kure-blue)',
+        color: 'white',
+      },
+      inactiveTag: {
+        backgroundColor: 'var(--kure-blue-light)',
+        color: 'var(--kure-blue)',
+      },
+    };
+
+    return (
+      <div style={styles.container}>
+        {AVAILABLE_TAGS.map((tag) => (
+          <button
+            key={tag}
+            onClick={() => {
+              setSelectedTags(prev =>
+                prev.includes(tag)
+                  ? prev.filter(t => t !== tag)
+                  : [...prev, tag]
+              );
+            }}
+            style={{
+              ...styles.tag,
+              ...(selectedTags.includes(tag) ? styles.activeTag : styles.inactiveTag),
+            }}
+          >
+            {tag}
+          </button>
+        ))}
+      </div>
+    );
+  };
+  useEffect(() => {
+    console.log("🚀 選択されたタグ:", selectedTags);
+    console.log("🎯 フィルター適用前のデータ:", choices);
+    console.log("✅ フィルター適用後のデータ:", filteredChoices);
+  }, [filteredChoices, choices, selectedTags]);
   return (
     <div style={styles.container}>
       <div style={styles.card} className="container-card">
-        <h1 style={styles.title as React.CSSProperties}>呉市観光プランナー</h1>
+        <h1 style={styles.title as React.CSSProperties}>Kure-NAVI</h1>
+        
+        
         
         <div style={styles.buttonContainer}>
           <Button onClick={addPlan} style={styles.addButton}>
@@ -592,7 +676,7 @@ export default function Page({label}:any) {
                                     <img 
                                       src={foundItem.child?.image_url} 
                                       alt={foundItem.child?.location_name}
-                                      style={styles.cardImage}
+                                      style={styles.cardImage as React.CSSProperties}
                                     />
                                     <div style={styles.cardTitle}>
                                       {foundItem.child?.location_name}
@@ -613,9 +697,9 @@ export default function Page({label}:any) {
                 ))}
               </div>
             </div>
-            
+            <TagFilter />
             <div style={styles.choicesContainer}>
-              {choices && choices
+              {filteredChoices && filteredChoices
                 .map((item: any) => {
                   const referencePoint = family.length > 0 
                     ? family[family.length - 1].child 
@@ -649,13 +733,33 @@ export default function Page({label}:any) {
                       <img 
                         src={item.image_url} 
                         alt={item.location_name}
-                        style={{
-                          ...styles.cardImage,
-                          transition: 'transform 0.3s ease',
-                        }}
+                        style={styles.cardImage as React.CSSProperties}
                       />
-                      <div style={styles.cardTitle}>
+                      <div style={styles.cardTitle} title={item.location_name}>
                         {item.location_name}
+                      </div>
+                      <div style={{
+                        display: 'flex',
+                        gap: '0.25rem',
+                        flexWrap: 'wrap',
+                        justifyContent: 'center',
+                        padding: '0.25rem',
+                        fontSize: '0.75rem',
+                      }}>
+                        {item.tag && item.tag.split(', ').map((tag: string) => (
+                          <span
+                            key={tag}
+                            style={{
+                              backgroundColor: 'var(--kure-blue-light)',
+                              color: 'var(--kure-blue)',
+                              padding: '0.125rem 0.5rem',
+                              borderRadius: '9999px',
+                              fontSize: '0.625rem',
+                            }}
+                          >
+                            {tag}
+                          </span>
+                        ))}
                       </div>
                       {item.distance !== Infinity && (
                         <DistanceLabel distance={item.distance} />
