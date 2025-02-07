@@ -7,6 +7,8 @@ import { useState,useEffect } from 'react';
 import Papa from "papaparse";
 import { Button } from './ui/button';
 import TimePicker from './TimePicker';
+import TimePickerContainer from './TimePickerContainer';
+import { Plus, Minus } from 'lucide-react';
 
 interface data {
   location_name: string;
@@ -95,79 +97,213 @@ console.log("choices",choices);
       setContainers(newContainers);
     }
   }
-  return (
-    <div>
-      <Button onClick={addPlan}>
-        追加
-      </Button>
-      <Button onClick={deletePlan}>
-        削除
-      </Button>
 
-<DndContext onDragEnd={handleDragEnd}>
-  <div className='flex flex-col items-center w-screen h-screen gap-8'>
-    <div className='w-full overflow-x-auto'>
-      <div className='flex min-w-min gap-4 p-8'>
-        {containers.map((id) => (
-          <Droppable key={id} id={id} isOverAddClass="bg-green-700">
-            <div className='relative w-52 min-h-[8rem] border-2 border-dashed border-gray-100/50'>
-              {family.length > 0 ? (
-                (() => {
-                  const foundItem = family.find((item) => item.parentId === id);
-                  return foundItem ? (
-                    <div className="flex flex-col items-center">
-                      <div className="absolute -top-8 w-full flex justify-center">
-                        <TimePicker 
-                          onChange={(time) => handleTimeChange(foundItem.child?.location_name || '', time)} 
-                        />
+  const handleTimeChange = (itemId: string, time: string) => {
+    setFamily(prevFamily => 
+      prevFamily.map(item => 
+        item.child?.location_name === itemId 
+          ? { ...item, time: time }
+          : item
+      )
+    );
+  };
+
+  const styles = {
+    container: {
+      padding: '2rem',
+      width: '90vw',
+      margin: '0 auto',
+    },
+    card: {
+      width: '100%',
+      margin: '0 auto',
+    },
+    scrollContainer: {
+      width: '100%',
+      overflowX: 'auto',
+      display: 'flex',
+      flexDirection: 'column' as const,
+      gap: '1rem',
+    },
+    timePickerAndDroppableWrapper: {
+      display: 'flex',
+      minWidth: 'min-content',
+      gap: '1.5rem',
+      padding: '1rem',
+    },
+    droppableBox: {
+      position: 'relative',
+      width: '16rem',
+      minHeight: '10rem',
+      border: '2px dashed var(--kure-blue-light)',
+      borderRadius: '0.5rem',
+      padding: '1rem',
+    },
+    choicesContainer: {
+      display: 'grid',
+      gridTemplateColumns: 'repeat(5, 1fr)', // 5列のグリッド
+      gap: '1rem',
+      padding: '1rem',
+      width: '100%',
+    },
+    draggableItemInChoices: {
+      padding: '1rem',
+      width: '100%',
+      textAlign: 'center' as const,
+    },
+    title: {
+      fontSize: '1.875rem',
+      fontWeight: 'bold',
+      color: 'var(--kure-navy)',
+      marginBottom: '2rem',
+      textAlign: 'center',
+    },
+    buttonContainer: {
+      display: 'flex',
+      gap: '1rem',
+      marginBottom: '2rem',
+      justifyContent: 'center',
+    },
+    addButton: {
+      backgroundColor: 'var(--kure-blue)',
+      color: 'white',
+      display: 'flex',
+      alignItems: 'center',
+      gap: '0.5rem',
+      padding: '0.75rem 1.5rem',
+      fontSize: '1rem',
+    },
+    deleteButton: {
+      border: '1px solid var(--kure-blue)',
+      color: 'var(--kure-blue)',
+      display: 'flex',
+      alignItems: 'center',
+      gap: '0.5rem',
+      padding: '0.75rem 1.5rem',
+      fontSize: '1rem',
+      backgroundColor: 'transparent',
+    },
+    mainContent: {
+      display: 'flex',
+      flexDirection: 'column' as const,
+      alignItems: 'center',
+      width: '100%',
+      gap: '2rem',
+    },
+    droppableContainer: {
+      width: '100%',
+      overflowX: 'auto',
+    },
+    droppableWrapper: {
+      display: 'flex',
+      minWidth: 'min-content',
+      gap: '1.5rem',
+      padding: '1rem',
+    },
+    draggableContent: {
+      display: 'flex',
+      flexDirection: 'column',
+      alignItems: 'center',
+      width: '100%',
+      height: '100%',
+    },
+    draggableItem: {
+      width: '100%',
+      height: '100%',
+      padding: '1rem',
+      minHeight: '8rem',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    itemText: {
+      display: 'flex',
+      flexDirection: 'column',
+      alignItems: 'center',
+      gap: '0.5rem',
+    },
+    dropPlaceholder: {
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      height: '100%',
+      textAlign: 'center',
+      color: 'var(--kure-blue)',
+      opacity: 0.5,
+    },
+  };
+
+  return (
+    <div style={styles.container}>
+      <div style={styles.card} className="container-card">
+        <h1 style={styles.title as React.CSSProperties}>呉市観光プランナー</h1>
+        
+        <div style={styles.buttonContainer}>
+          <Button onClick={addPlan} style={styles.addButton}>
+            <Plus style={{ width: '1.25rem', height: '1.25rem' }} />
+            プランを追加
+          </Button>
+          <Button onClick={deletePlan} style={styles.deleteButton}>
+            <Minus style={{ width: '1.25rem', height: '1.25rem' }} />
+            プランを削除
+          </Button>
+        </div>
+
+        <DndContext onDragEnd={handleDragEnd}>
+          <div style={styles.mainContent}>
+            <div style={styles.scrollContainer as React.CSSProperties}>
+              <div style={styles.timePickerAndDroppableWrapper}>
+                {containers.map((id) => (
+                  <div key={id} style={{ width: '16rem' }}>
+                    <TimePickerContainer
+                      containers={[id]}
+                      family={family}
+                      onTimeChange={handleTimeChange}
+                    />
+                    <Droppable id={id}>
+                      <div style={styles.droppableBox as React.CSSProperties}>
+                        {family.length > 0 ? (
+                          (() => {
+                            const foundItem = family.find((item) => item.parentId === id);
+                            return foundItem ? (
+                              <div style={styles.draggableContent as React.CSSProperties}>
+                                <Draggable key={foundItem.child?.location_name} id={foundItem.child?.location_name || ''}>
+                                  <div style={styles.draggableItem} className="draggable-item">
+                                    <div style={styles.itemText as React.CSSProperties}>
+                                      <span style={{ fontWeight: 500, textAlign: 'center' }}>
+                                        {foundItem.child?.location_name}
+                                      </span>
+                                    </div>
+                                  </div>
+                                </Draggable>
+                              </div>
+                            ) : (
+                              <div style={styles.dropPlaceholder as React.CSSProperties}>ここにドロップ</div>
+                            );
+                          })()
+                        ) : (
+                          <div style={styles.dropPlaceholder as React.CSSProperties}>ここにドロップ</div>
+                        )}
                       </div>
-                      <Draggable key={foundItem.child?.location_name || ''} id={foundItem.child?.location_name || ''}>
-                        <div key={foundItem.child?.location_name || ''} id={foundItem.child?.location_name || ''} 
-                          className='cursor-grab w-48 h-20 bg-blue-200 flex justify-center items-center m-1'>
-                          <div className="flex flex-col items-center">
-                            <span>{foundItem.child?.location_name}</span>
-                            {foundItem.time && (
-                              <span className="text-sm text-gray-600">{foundItem.time}</span>
-                            )}
-                          </div>
-                        </div>
-                      </Draggable>
-                    </div>
-                  ) : 'Drop here';
-                })()
-              ) : 'Drop here'}
+                    </Droppable>
+                  </div>
+                ))}
+              </div>
             </div>
-          </Droppable>
-        ))}
+            
+            <div style={styles.choicesContainer}>
+              {choices?.map((items: any) => (
+                <Draggable key={items.location_name} id={items.location_name}>
+                  <div className="draggable-item" style={styles.draggableItemInChoices as React.CSSProperties}>
+                    {items.location_name}
+                  </div>
+                </Draggable>
+              ))}
+            </div>
+          </div>
+        </DndContext>
       </div>
     </div>
-             {/* ドラッグするアイテム */}
-             <div className='flex h-20'>
-      {choices?.map((items:any)=>{
-        return(
-          <Draggable key={items.location_name} id={items.location_name}>
-            <div key={items.location_name} id={items.location_name} className='cursor-grab w-48 h-20 bg-blue-200 flex justify-center items-center'>
-              {items.location_name}
-            </div>
-          </Draggable>
-        )
-      })}
-    </div>
-  </div>
-
-  <div>
-        <h1>CSV Data</h1>
-        <ul>
-            {data.map((spot:any, index:number) => (
-                <li key={index}>
-                    {spot.location_name} - {spot.latitude} - {spot.longitude} - {spot.image_url}
-                </li>
-            ))}
-        </ul>
-    </div>
-</DndContext>
-    </div>
-
   );
   
   function handleDragEnd(event: DragEndEvent) {
@@ -219,13 +355,4 @@ console.log("choices",choices);
       }
     }
   }
-
-  const handleTimeChange = (itemId: string, time: string) => {
-    setFamily(family.map(item => {
-      if (item.child?.location_name === itemId) {
-        return { ...item, time };
-      }
-      return item;
-    }));
-  };
 }

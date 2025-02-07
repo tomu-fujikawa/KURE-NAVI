@@ -16,7 +16,15 @@ export default function Draggable({children, id}: DraggableProps) {
   }
   
   return (
-    <button ref={setNodeRef} style={style} {...listeners} {...attributes}>
+    <button 
+      ref={setNodeRef} 
+      style={{
+        ...style,
+        width: '100%',
+      }}
+      {...listeners} 
+      {...attributes}
+    >
       {children}
     </button>
   );

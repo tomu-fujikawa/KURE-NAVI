@@ -2,8 +2,39 @@
 @tailwind components;
 @tailwind utilities;
 
+:root {
+  --kure-blue-light: #E3F2FD;
+  --kure-blue: #2196F3;
+  --kure-blue-dark: #1976D2;
+  --kure-navy: #0D47A1;
+  --kure-wave: #81D4FA;
+}
+
 body {
-  font-family: Arial, Helvetica, sans-serif;
+  background: linear-gradient(135deg, var(--kure-blue-light) 0%, var(--kure-wave) 100%);
+  min-height: 100vh;
+}
+
+.container-card {
+  background: rgba(255, 255, 255, 0.8);
+  backdrop-filter: blur(10px);
+  border-radius: 1rem;
+  box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.15);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  padding: 1.5rem;
+}
+
+.draggable-item {
+  background: var(--kure-blue);
+  color: white;
+  border-radius: 0.5rem;
+  transition: all 0.3s ease;
+}
+
+.draggable-item:hover {
+  background: var(--kure-blue-dark);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }
 
 @layer base {
