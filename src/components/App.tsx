@@ -26,53 +26,54 @@ export default function Page({label}:any) {
     const [data, setData] = useState<data[]>([]);
     const [choices, setChoices] = useState<any>();
     useEffect(() => {
-      // fetch("/locations.csv")
-      //     .then((response) => response.text())
-      //     .then((csvText) => {
-      //         const parsedData = Papa.parse<spot>(csvText, {
-      //             header: true,
-      //             skipEmptyLines: true,
-      //             dynamicTyping: { age: true },
-      //         });
+      fetch("/locations.csv")
+          .then((response) => response.text())
+          .then((csvText) => {
+              const parsedData = Papa.parse<data>(csvText, {
+                  header: true,
+                  skipEmptyLines: true,
+                  dynamicTyping: { age: true },
+              });
   
-      //         setData(parsedData.data);
-      //     })
-      //     .catch((error) => console.error("Error fetching CSV:", error));
-     const data = [{
-        image_url:"https://api.expolis.cloud/assets/opendata/t/kure/png/islands-sightseeing-1/%E6%B2%96%E5%8F%8B9_%E4%BA%94%E8%A7%92%E3%81%AE%E4%BA%95%E6%88%B8.png",
-        latitude
-        : 
-        34.16246,
-        location_name
-        : 
-        "A",
-        longitude
-        : 
-        132.83784},
-        {
-          image_url:"https://api.expolis.cloud/assets/opendata/t/kure/png/islands-sightseeing-1/%E6%B2%96%E5%8F%8B9_%E4%BA%94%E8%A7%92%E3%81%AE%E4%BA%95%E6%88%B8.png",
-          latitude
-          : 
-          34.16246,
-          location_name
-          : 
-          "B",
-          longitude
-          : 
-          132.83784},
-          {
-            image_url:"https://api.expolis.cloud/assets/opendata/t/kure/png/islands-sightseeing-1/%E6%B2%96%E5%8F%8B9_%E4%BA%94%E8%A7%92%E3%81%AE%E4%BA%95%E6%88%B8.png",
-            latitude
-            : 
-            34.16246,
-            location_name
-            : 
-            "C",
-            longitude
-            : 
-            132.83784}];
-      setChoices(data);
-      setData(data);
+              setData(parsedData.data);
+              setChoices(parsedData.data);
+          })
+          .catch((error) => console.error("Error fetching CSV:", error));
+    //  const data = [{
+    //     image_url:"https://api.expolis.cloud/assets/opendata/t/kure/png/islands-sightseeing-1/%E6%B2%96%E5%8F%8B9_%E4%BA%94%E8%A7%92%E3%81%AE%E4%BA%95%E6%88%B8.png",
+    //     latitude
+    //     : 
+    //     34.16246,
+    //     location_name
+    //     : 
+    //     "A",
+    //     longitude
+    //     : 
+    //     132.83784},
+    //     {
+    //       image_url:"https://api.expolis.cloud/assets/opendata/t/kure/png/islands-sightseeing-1/%E6%B2%96%E5%8F%8B9_%E4%BA%94%E8%A7%92%E3%81%AE%E4%BA%95%E6%88%B8.png",
+    //       latitude
+    //       : 
+    //       34.16246,
+    //       location_name
+    //       : 
+    //       "B",
+    //       longitude
+    //       : 
+    //       132.83784},
+    //       {
+    //         image_url:"https://api.expolis.cloud/assets/opendata/t/kure/png/islands-sightseeing-1/%E6%B2%96%E5%8F%8B9_%E4%BA%94%E8%A7%92%E3%81%AE%E4%BA%95%E6%88%B8.png",
+    //         latitude
+    //         : 
+    //         34.16246,
+    //         location_name
+    //         : 
+    //         "C",
+    //         longitude
+    //         : 
+    //         132.83784}];
+      // setChoices(data);
+      // setData(data);
 
   }, []);
   // const containers = ['A', 'B', 'C'];
@@ -134,10 +135,10 @@ console.log("choices",choices);
     droppableBox: {
       position: 'relative',
       width: '16rem',
-      minHeight: '10rem',
+      minHeight: '220px', // カードの高さ + パディング
       border: '2px dashed var(--kure-blue-light)',
       borderRadius: '0.5rem',
-      padding: '1rem',
+      padding: '0.5rem',
     },
     choicesContainer: {
       display: 'grid',
@@ -147,9 +148,28 @@ console.log("choices",choices);
       width: '100%',
     },
     draggableItemInChoices: {
-      padding: '1rem',
+      padding: '0.5rem',
       width: '100%',
       textAlign: 'center' as const,
+      display: 'flex',
+      flexDirection: 'column' as const,
+      gap: '0.5rem',
+      height: '200px', // カードの高さを固定
+    },
+    cardImage: {
+      width: '100%',
+      height: '150px',
+      objectFit: 'cover' as const,
+      borderRadius: '0.25rem',
+    },
+    cardTitle: {
+      fontSize: '0.875rem',
+      fontWeight: '500',
+      color: 'white',
+      flex: 1,
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
     },
     title: {
       fontSize: '1.875rem',
@@ -201,20 +221,17 @@ console.log("choices",choices);
       padding: '1rem',
     },
     draggableContent: {
-      display: 'flex',
-      flexDirection: 'column',
-      alignItems: 'center',
       width: '100%',
       height: '100%',
     },
     draggableItem: {
+      padding: '0.5rem',
       width: '100%',
-      height: '100%',
-      padding: '1rem',
-      minHeight: '8rem',
+      textAlign: 'center' as const,
       display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'center',
+      flexDirection: 'column' as const,
+      gap: '0.5rem',
+      height: '200px',
     },
     itemText: {
       display: 'flex',
@@ -266,13 +283,16 @@ console.log("choices",choices);
                           (() => {
                             const foundItem = family.find((item) => item.parentId === id);
                             return foundItem ? (
-                              <div style={styles.draggableContent as React.CSSProperties}>
+                              <div style={styles.draggableContent}>
                                 <Draggable key={foundItem.child?.location_name} id={foundItem.child?.location_name || ''}>
                                   <div style={styles.draggableItem} className="draggable-item">
-                                    <div style={styles.itemText as React.CSSProperties}>
-                                      <span style={{ fontWeight: 500, textAlign: 'center' }}>
-                                        {foundItem.child?.location_name}
-                                      </span>
+                                    <img 
+                                      src={foundItem.child?.image_url} 
+                                      alt={foundItem.child?.location_name}
+                                      style={styles.cardImage}
+                                    />
+                                    <div style={styles.cardTitle}>
+                                      {foundItem.child?.location_name}
                                     </div>
                                   </div>
                                 </Draggable>
@@ -294,8 +314,15 @@ console.log("choices",choices);
             <div style={styles.choicesContainer}>
               {choices?.map((items: any) => (
                 <Draggable key={items.location_name} id={items.location_name}>
-                  <div className="draggable-item" style={styles.draggableItemInChoices as React.CSSProperties}>
-                    {items.location_name}
+                  <div className="draggable-item" style={styles.draggableItemInChoices}>
+                    <img 
+                      src={items.image_url} 
+                      alt={items.location_name}
+                      style={styles.cardImage}
+                    />
+                    <div style={styles.cardTitle}>
+                      {items.location_name}
+                    </div>
                   </div>
                 </Draggable>
               ))}
