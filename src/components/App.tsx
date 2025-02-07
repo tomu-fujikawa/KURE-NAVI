@@ -736,6 +736,30 @@ const filteredChoices = useMemo(() => {
     setVisibleRows(prev => Math.max(INITIAL_ROWS, prev - ROW_INCREMENT));
   };
 
+  const handleAddCourse = () => {
+    // 現在の時刻を取得
+    const currentTime = new Date().toISOString();
+    
+    // 登録データを整形
+    const registrationData = {
+      title: tripTitle,  // ユーザーが入力した旅の名前
+      id: `${tripTitle}-${currentTime}`,  // 旅の名前と時刻を組み合わせたID
+      createdAt: currentTime,  // 現在の時刻
+      destinations: family.map(item => ({
+        location_name: item.child?.location_name || '',
+        latitude: item.child?.latitude || 0,
+        longitude: item.child?.longitude || 0,
+        image_url: item.child?.image_url || '',
+        explanation: item.child?.explanation || '',
+        tag: item.child?.tag || '',
+        visit_time: item.time || ''
+      }))
+    };
+
+    // 登録データをコンソールに表示
+    console.log("登録データ:", registrationData);  // 配列形式で表示
+  };
+
   return (
     <div style={styles.container}>
       <div style={styles.card} className="container-card">
@@ -769,16 +793,20 @@ const filteredChoices = useMemo(() => {
               </Button>
             </div>
           </div>
-          <Button onClick={deletePlan} style={{
-            padding: "0.5rem 1rem",
-            borderRadius: "8px",
-            border: "none",
-            outline: "none",
-            width: "200px",
-            height: "100px",
-          }}>
-                プランを登録
-              </Button>
+          <Button 
+            onClick={handleAddCourse}
+            disabled={!tripTitle || family.length === 0}
+            style={{
+              padding: "0.5rem 1rem",
+              borderRadius: "8px",
+              border: "none",
+              outline: "none",
+              width: "200px",
+              height: "100px",
+            }}
+          >
+            プランを登録
+          </Button>
         </div>
  
 
