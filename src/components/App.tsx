@@ -9,6 +9,8 @@ import { Button } from './ui/button';
 import TimePicker from './TimePicker';
 import TimePickerContainer from './TimePickerContainer';
 import { Plus, Minus, PlusCircle, Trash2, MinusCircle } from 'lucide-react';
+import db from '../firebase';
+import { collection, getDocs } from "firebase/firestore"; 
 
 
 interface data {
@@ -41,6 +43,8 @@ export default function Page({label}:any) {
     const INITIAL_ROWS = 3;
     const ROW_INCREMENT = 3;
     const [visibleRows, setVisibleRows] = useState(INITIAL_ROWS);
+    const [sightseeingCourse, setSightseeingCourse] = useState<any[]>([]);
+    
     useEffect(() => {
       fetch("/locations2.csv")
           .then((response) => response.text())
@@ -55,44 +59,25 @@ export default function Page({label}:any) {
               setChoices(parsedData.data);
           })
           .catch((error) => console.error("Error fetching CSV:", error));
-    //  const data = [{
-    //     image_url:"https://api.expolis.cloud/assets/opendata/t/kure/png/islands-sightseeing-1/%E6%B2%96%E5%8F%8B9_%E4%BA%94%E8%A7%92%E3%81%AE%E4%BA%94%E6%88%B8.png",
-    //     latitude
-    //     : 
-    //     34.16246,
-    //     location_name
-    //     : 
-    //     "A",
-    //     longitude
-    //     : 
-    //     132.83784},
-    //     {
-    //       image_url:"https://api.expolis.cloud/assets/opendata/t/kure/png/islands-sightseeing-1/%E6%B2%96%E5%8F%8B9_%E4%BA%94%E8%A7%92%E3%81%AE%E4%BA%94%E6%88%B8.png",
-    //       latitude
-    //       : 
-    //       34.16246,
-    //       location_name
-    //       : 
-    //       "B",
-    //       longitude
-    //       : 
-    //       132.83784},
-    //       {
-    //         image_url:"https://api.expolis.cloud/assets/opendata/t/kure/png/islands-sightseeing-1/%E6%B2%96%E5%8F%8B9_%E4%BA%94%E8%A7%92%E3%81%AE%E4%BA%94%E6%88%B8.png",
-    //         latitude
-    //         : 
-    //         34.16246,
-    //         location_name
-    //         : 
-    //         "C",
-    //         longitude
-    //         : 
-    //         132.83784}];
-      // setChoices(data);
-      // setData(data);
 
-  }, []);
-  // const containers = ['A', 'B', 'C']
+      const fetchUsers = async () => {
+        try {
+          const querySnapshot = await getDocs(collection(db, "posts"));
+          const userData: any[] = [];
+          querySnapshot.forEach((doc) => {
+            userData.push({ id: doc.id, ...doc.data() });
+          });
+          setSightseeingCourse(userData);
+          console.log("db", db);
+          console.log("userData",userData);
+        } catch (error) {
+          console.error("Error fetching users:", error);
+        }
+      };
+
+      fetchUsers();
+    }, []);
+
   const addPlan = () => {
     const nextLetter = String.fromCharCode(65 + containers.length); // A, B, C...
     setContainers([...containers, nextLetter]);
@@ -653,30 +638,6 @@ const filteredChoices = useMemo(() => {
     })));
   };
 
-  // const filteredChoices = useMemo(() => {
-  //   if (!choices || selectedTags.length === 0) return choices;
-  
-  //   console.log('=== フィルタリング実行 ===');
-  //   console.log('🎯 選択されたタグ:', selectedTags);
-  //   console.log('📍 フィルタリング前のデータ数:', choices.length);
-    
-  //   const filtered = choices.filter((item: data) => {
-  //     if (!item || !item.tag) return false;
-      
-  //     const itemTags = item.tag.split(', ');
-  //     // 選択されたタグをすべて含むものだけを表示
-  //     return selectedTags.every(tag => itemTags.includes(tag));
-  //   });
-    
-  //   console.log('✅ フィルタリング後のデータ数:', filtered.length);
-  //   console.log('📊 フィルタリング結果:', filtered.map((item: data) => ({
-  //     観光地名: item.location_name,
-  //     タグ: item.tag
-  //   })));
-    
-  //   return filtered;
-  // }, [choices, selectedTags]);
-
   const TagFilter = () => {
     const styles = {
       container: {
@@ -965,6 +926,7 @@ const filteredChoices = useMemo(() => {
             </button>
           )}
         </div>
+        みんなの観光
       </div>
     </div>
   );
