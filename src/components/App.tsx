@@ -961,6 +961,7 @@ const filteredChoices = useMemo(() => {
             </button>
           )}
         </div>
+        <div style={{display:"flex", flexDirection:"column",marginTop:"108px"}}>
         <div style={styles.tagContainer as React.CSSProperties}>
                 <div style={{...styles.tagTitleContainer, paddingLeft:"6px"}}>
                 <div style={styles.tagTitle}>みんなの観光</div>
@@ -968,8 +969,7 @@ const filteredChoices = useMemo(() => {
                 </div>
                 {/* フィルターと検索のコンテナ */}
               </div>
-        {/* // ✅ `sightseeingCourse` をカードデザインで表示 */}
-<div style={styles.sightseeing_courseContainer}>
+        <div style={styles.sightseeing_courseContainer}>
   {sightseeingCourse.map((course: any, courseIndex: number) => (
     course.destinations.map((destination: any, index: number) => (
       <div key={"sightseeing" + courseIndex + index} style={styles.sightseeing_card}>
@@ -984,6 +984,10 @@ const filteredChoices = useMemo(() => {
     
   ))}
 </div>
+        </div>
+
+        {/* // ✅ `sightseeingCourse` をカードデザインで表示 */}
+
       </div>
     </div>
   );
