@@ -46,6 +46,8 @@ export default function Page({label}:any) {
     const [visibleRows, setVisibleRows] = useState(INITIAL_ROWS);
     const [sightseeingCourse, setSightseeingCourse] = useState<any[]>([]);
     const [tripTitle, setTripTitle] = useState("");
+    const [maxTotalDistance, setMaxTotalDistance] = useState<number>(20); // フィルター用の最大合計距離（km）
+
     
     useEffect(() => {
       fetch("/locations2.csv")
@@ -456,13 +458,52 @@ const filteredChoices = useMemo(() => {
   });
 }, [choices, selectedTags, searchQuery]);
 
+  // 2点間の距離を計算する関数（ヘーベルサイン公式）
+  const calculateDistance = (lat1: number, lon1: number, lat2: number, lon2: number): number => {
+    const R = 6371; // 地球の半径（km）
+    const dLat = (lat2 - lat1) * Math.PI / 180;
+    const dLon = (lon2 - lon1) * Math.PI / 180;
+    const a = 
+      Math.sin(dLat/2) * Math.sin(dLat/2) +
+      Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * 
+      Math.sin(dLon/2) * Math.sin(dLon/2);
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+    return R * c;
+  };
+
+  // 🚀 各観光プランの合計距離を計算する関数
+  const calculateTotalDistance = (destinations: any[]): number => {
+    if (!destinations || destinations.length < 2) return 0; // 2地点未満なら距離は0
+  
+    let totalDistance = 0;
+    for (let i = 0; i < destinations.length - 1; i++) {
+      totalDistance += calculateDistance(
+        destinations[i].latitude,
+        destinations[i].longitude,
+        destinations[i + 1].latitude,
+        destinations[i + 1].longitude
+      );
+    }
+  
+    return totalDistance; // 🔥 `string` ではなく `number` を返す
+  };
+
+
 const filteredSightseeingCourse = useMemo(() => {
   if (!sightseeingCourse) return [];
 
-  return sightseeingCourse.filter((course: any) =>
-    course.title.toLowerCase().includes(searchQueryCourse.toLowerCase())
-  );
-}, [sightseeingCourse, searchQueryCourse]);
+  return sightseeingCourse.filter((course: any) => {
+    const totalDistance = calculateTotalDistance(course.destinations); // 🔥 `number` 型になっている
+    return (
+      course.title.toLowerCase().includes(searchQueryCourse.toLowerCase()) &&
+      totalDistance <= maxTotalDistance // ✅ ここでエラーが出なくなる
+    );
+  });
+}, [sightseeingCourse, searchQueryCourse, maxTotalDistance]);
+
+
+
+
 
   // アルファベットのIDを生成する関数を追加
   const generateAlphabetId = (index: number): string => {
@@ -620,38 +661,9 @@ const filteredSightseeingCourse = useMemo(() => {
     });
   };
 
-  // 2点間の距離を計算する関数（ヘーベルサイン公式）
-  const calculateDistance = (lat1: number, lon1: number, lat2: number, lon2: number): number => {
-    const R = 6371; // 地球の半径（km）
-    const dLat = (lat2 - lat1) * Math.PI / 180;
-    const dLon = (lon2 - lon1) * Math.PI / 180;
-    const a = 
-      Math.sin(dLat/2) * Math.sin(dLat/2) +
-      Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * 
-      Math.sin(dLon/2) * Math.sin(dLon/2);
-    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
-    return R * c;
-  };
 
-  // 🚀 各観光プランの合計距離を計算する関数
-const calculateTotalDistance = (destinations: any[]): string => {
-  if (!destinations || destinations.length < 2) return ""; // 2地点未満なら距離は表示しない
 
-  let totalDistance = 0;
-  for (let i = 0; i < destinations.length - 1; i++) {
-    totalDistance += calculateDistance(
-      destinations[i].latitude,
-      destinations[i].longitude,
-      destinations[i + 1].latitude,
-      destinations[i + 1].longitude
-    );
-  }
-
-  // 📏 1km 未満なら "〇〇m"、それ以上なら "〇〇km" 表記
-  return totalDistance < 1
-    ? `(${Math.round(totalDistance * 1000)}m)`
-    : `(${totalDistance.toFixed(1)}km)`;
-};
+  
 
   // 指定した位置から近い順に観光情報をソートする関数
   const sortByDistance = (targetLat: number, targetLon: number, items: any[]) => {
@@ -1091,18 +1103,37 @@ const calculateTotalDistance = (destinations: any[]): string => {
             <line x1="21" y1="21" x2="16.65" y2="16.65"/>
           </svg>
         </div>
+        <div style={{ display: "flex", alignItems: "center", gap: "1rem", marginBottom: "10px" }}>
+  <label>最大合計距離 (km):</label>
+  <input
+    type="number"
+    value={maxTotalDistance}
+    onChange={(e) => setMaxTotalDistance(Number(e.target.value))}
+    min="1"
+    max="100"
+    step="1"
+    style={{
+      width: "80px",
+      padding: "5px",
+      borderRadius: "5px",
+      border: "1px solid var(--kure-blue)",
+    }}
+  />
+</div>
+
   </div>
 
   {/* 各観光プランを縦に並べる */}
   <div style={{ display: "flex", flexDirection: "column", gap: "20px", marginTop:"20px",marginLeft:"24px" }}>
   {filteredSightseeingCourse.map((course: any, courseIndex: number) => {
-  const totalDistanceText = calculateTotalDistance(course.destinations); // 距離を計算
-  
+  const totalDistance = calculateTotalDistance(course.destinations); // 距離を計算
+  const totalDistanceText = `${totalDistance.toFixed(1)} km`; // 🔥 km を追加
+
   return (
     <div key={course.id} style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
-      {/* 🌟 タイトル + (合計距離) */}
+      {/* 🌟 タイトル + (合計距離 km) */}
       <h2 style={{ fontSize: "24px", fontWeight: "bold", color: "var(--kure-blue)" }}>
-        {course.title} {totalDistanceText}
+        {course.title} ({totalDistanceText}) {/* ✅ km を明示的に追加 */}
       </h2>
 
       {/* destinations を横に並べる (4つを超えたら横スクロール) */}
@@ -1140,6 +1171,7 @@ const calculateTotalDistance = (destinations: any[]): string => {
     </div>
   );
 })}
+
 
 
   </div>
