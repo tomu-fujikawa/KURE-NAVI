@@ -35,6 +35,8 @@ export default function Page({label}:any) {
     const [family, setFamily] = useState<family[]>([]);
     const [containers, setContainers] = useState<string[]>(['A']);
     const [showAllCards, setShowAllCards] = useState(false);
+    // 検索用の状態を追加
+    const [searchQuery, setSearchQuery] = useState('');
     const CARDS_PER_ROW = 5;
     const INITIAL_ROWS = 3;
     const ROW_INCREMENT = 3;
@@ -382,8 +384,56 @@ export default function Page({label}:any) {
       justifyContent: 'center',
       marginTop: '1rem',
       gap: '1rem',
+    },filterContainer: {
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      gap: '1rem',
     },
+    searchContainer: {
+      position: 'relative' as const,
+    },
+    searchInput: {
+      padding: '0.5rem 1rem',
+      paddingLeft: '2.5rem', // アイコンのスペースを確保
+      borderRadius: '9999px',
+      border: '2px solid var(--kure-blue)',
+      fontSize: '0.875rem',
+      outline: 'none',
+      transition: 'all 0.3s ease',
+      width: '250px', // 幅を調整
+    },
+    searchIcon: {
+      position: 'absolute' as const,
+      left: '0.75rem',
+      top: '50%',
+      transform: 'translateY(-50%)',
+      color: 'var(--kure-blue)',
+      width: '1.25rem',
+      height: '1.25rem',
+    },
+
   };
+
+// フィルタリングロジックの更新
+const filteredChoices = useMemo(() => {
+  if (!choices) return [];
+  
+  return choices.filter((item: data) => {
+    // タグフィルター
+    const passesTagFilter = selectedTags.length === 0 || (
+      item.tag && selectedTags.every(tag => item.tag.split(', ').includes(tag))
+    );
+    
+    // 検索フィルター
+    const passesSearchFilter = !searchQuery || (
+      item.location_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      (item.tag && item.tag.toLowerCase().includes(searchQuery.toLowerCase()))
+    );
+    
+    return passesTagFilter && passesSearchFilter;
+  });
+}, [choices, selectedTags, searchQuery]);
 
   // アルファベットのIDを生成する関数を追加
   const generateAlphabetId = (index: number): string => {
@@ -603,29 +653,29 @@ export default function Page({label}:any) {
     })));
   };
 
-  const filteredChoices = useMemo(() => {
-    if (!choices || selectedTags.length === 0) return choices;
+  // const filteredChoices = useMemo(() => {
+  //   if (!choices || selectedTags.length === 0) return choices;
   
-    console.log('=== フィルタリング実行 ===');
-    console.log('🎯 選択されたタグ:', selectedTags);
-    console.log('📍 フィルタリング前のデータ数:', choices.length);
+  //   console.log('=== フィルタリング実行 ===');
+  //   console.log('🎯 選択されたタグ:', selectedTags);
+  //   console.log('📍 フィルタリング前のデータ数:', choices.length);
     
-    const filtered = choices.filter((item: data) => {
-      if (!item || !item.tag) return false;
+  //   const filtered = choices.filter((item: data) => {
+  //     if (!item || !item.tag) return false;
       
-      const itemTags = item.tag.split(', ');
-      // 選択されたタグをすべて含むものだけを表示
-      return selectedTags.every(tag => itemTags.includes(tag));
-    });
+  //     const itemTags = item.tag.split(', ');
+  //     // 選択されたタグをすべて含むものだけを表示
+  //     return selectedTags.every(tag => itemTags.includes(tag));
+  //   });
     
-    console.log('✅ フィルタリング後のデータ数:', filtered.length);
-    console.log('📊 フィルタリング結果:', filtered.map((item: data) => ({
-      観光地名: item.location_name,
-      タグ: item.tag
-    })));
+  //   console.log('✅ フィルタリング後のデータ数:', filtered.length);
+  //   console.log('📊 フィルタリング結果:', filtered.map((item: data) => ({
+  //     観光地名: item.location_name,
+  //     タグ: item.tag
+  //   })));
     
-    return filtered;
-  }, [choices, selectedTags]);
+  //   return filtered;
+  // }, [choices, selectedTags]);
 
   const TagFilter = () => {
     const styles = {
@@ -785,7 +835,35 @@ export default function Page({label}:any) {
                 <div style={styles.tagTitle}>観光地リスト</div>
                 <div style={styles.underline}></div>
                 </div>
-                <TagFilter />
+                {/* フィルターと検索のコンテナ */}
+      <div style={styles.filterContainer}>
+        {/* タグフィルター */}
+        <TagFilter />
+        
+        {/* 検索欄 */}
+        <div style={styles.searchContainer}>
+          <input
+            type="text"
+            placeholder="観光地を検索..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            style={styles.searchInput}
+          />
+          <svg
+            style={styles.searchIcon}
+            xmlns="http://www.w3.org/2000/svg"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          >
+            <circle cx="11" cy="11" r="8"/>
+            <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+          </svg>
+        </div>
+      </div>
               </div>
               <div style={styles.choicesContainer}>
               {filteredChoices && filteredChoices

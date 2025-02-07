@@ -1,5 +1,3 @@
-"use client";
-
 import React from 'react';
 import TimePicker from './TimePicker';
 
@@ -14,6 +12,7 @@ export default function TimePickerContainer({ containers, family, onTimeChange }
     container: {
       display: 'flex',
       gap: '1.5rem',
+      marginBottom: '1rem',
       width: '100%',
       overflowX: 'auto',
       padding: '1rem',
