@@ -143,6 +143,7 @@ export default function Page({label}:any) {
       gap: '1rem',
       padding: '1rem',
       width: '100%',
+      transition: 'all 0.3s ease', // アニメーション効果を追加
     },
     draggableItemInChoices: {
       padding: '0.5rem',
@@ -229,6 +230,10 @@ export default function Page({label}:any) {
       flexDirection: 'column' as const,
       gap: '0.5rem',
       height: '200px',
+      transition: 'transform 0.3s ease',
+      ':hover': {
+        transform: 'translateY(-2px)',
+      }
     },
     itemText: {
       display: 'flex',
@@ -274,6 +279,32 @@ export default function Page({label}:any) {
       display: 'flex',
       alignItems: 'center',
       justifyContent: 'center',
+    },
+    distanceLabel: {
+      position: 'absolute' as 'absolute',
+      top: '0.5rem',
+      right: '0.5rem',
+      background: 'rgba(255, 255, 255, 0.95)',
+      padding: '0.25rem 0.75rem',
+      borderRadius: '20px',
+      fontSize: '0.8rem',
+      color: 'var(--kure-blue)',
+      fontWeight: 'bold' as 'bold',
+      boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)',
+      border: '2px solid var(--kure-blue)',
+      display: 'flex',
+      alignItems: 'center',
+      gap: '4px',
+      transition: 'all 0.3s ease',
+      zIndex: 10,
+      ':hover': {
+        transform: 'scale(1.05)',
+      }
+    },
+    distanceIcon: {
+      width: '14px',
+      height: '14px',
+      marginRight: '2px',
     }
   };
 
@@ -433,6 +464,68 @@ export default function Page({label}:any) {
     });
   };
 
+  // 2点間の距離を計算する関数（ヘーベルサイン公式）
+  const calculateDistance = (lat1: number, lon1: number, lat2: number, lon2: number): number => {
+    const R = 6371; // 地球の半径（km）
+    const dLat = (lat2 - lat1) * Math.PI / 180;
+    const dLon = (lon2 - lon1) * Math.PI / 180;
+    const a = 
+      Math.sin(dLat/2) * Math.sin(dLat/2) +
+      Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * 
+      Math.sin(dLon/2) * Math.sin(dLon/2);
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+    return R * c;
+  };
+
+  // 指定した位置から近い順に観光情報をソートする関数
+  const sortByDistance = (targetLat: number, targetLon: number, items: any[]) => {
+    return [...items].sort((a, b) => {
+      const distanceA = calculateDistance(targetLat, targetLon, a.latitude, a.longitude);
+      const distanceB = calculateDistance(targetLat, targetLon, b.latitude, b.longitude);
+      return distanceA - distanceB;
+    });
+  };
+
+  // 距離表示用のコンポーネントを改善
+  const DistanceLabel = ({ distance }: { distance: number }) => (
+    <div style={styles.distanceLabel}>
+      <svg 
+        style={styles.distanceIcon} 
+        viewBox="0 0 24 24" 
+        fill="var(--kure-blue)"
+      >
+        <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/>
+      </svg>
+      {distance < 1 
+        ? `${(distance * 1000).toFixed(0)}m` 
+        : `${distance.toFixed(1)}km`
+      }
+    </div>
+  );
+
+  // ドラッグ可能なアイテムをクリックした時のハンドラーを追加
+  const handleItemClick = (item: any) => {
+    if (!item || !item.child) return;
+
+    const targetLat = item.child.latitude;
+    const targetLon = item.child.longitude;
+    
+    // 未登録の観光情報を距離でソート
+    const sortedChoices = sortByDistance(targetLat, targetLon, choices);
+    setChoices(sortedChoices);
+    
+    console.log('=== クリックした観光地からの距離順にソート ===');
+    console.log('📍 基準位置:', {
+      観光地名: item.child.location_name,
+      緯度: targetLat,
+      経度: targetLon
+    });
+    console.log('📊 ソート結果:', sortedChoices.map(choice => ({
+      観光地名: choice.location_name,
+      距離: calculateDistance(targetLat, targetLon, choice.latitude, choice.longitude).toFixed(2) + 'km'
+    })));
+  };
+
   return (
     <div style={styles.container}>
       <div style={styles.card} className="container-card">
@@ -491,7 +584,11 @@ export default function Page({label}:any) {
                             return foundItem ? (
                               <div style={styles.draggableContent}>
                                 <Draggable key={foundItem.child?.location_name} id={foundItem.child?.location_name || ''}>
-                                  <div style={styles.draggableItem} className="draggable-item">
+                                  <div 
+                                    style={styles.draggableItem} 
+                                    className="draggable-item"
+                                    onClick={() => handleItemClick(foundItem)}
+                                  >
                                     <img 
                                       src={foundItem.child?.image_url} 
                                       alt={foundItem.child?.location_name}
@@ -518,20 +615,54 @@ export default function Page({label}:any) {
             </div>
             
             <div style={styles.choicesContainer}>
-              {choices?.map((items: any) => (
-                <Draggable key={items.location_name} id={items.location_name}>
-                  <div className="draggable-item" style={styles.draggableItemInChoices}>
-                    <img 
-                      src={items.image_url} 
-                      alt={items.location_name}
-                      style={styles.cardImage}
-                    />
-                    <div style={styles.cardTitle}>
-                      {items.location_name}
+              {choices && choices
+                .map((item: any) => {
+                  const referencePoint = family.length > 0 
+                    ? family[family.length - 1].child 
+                    : null;
+                  
+                  const distance = referencePoint 
+                    ? calculateDistance(
+                        referencePoint.latitude,
+                        referencePoint.longitude,
+                        item.latitude,
+                        item.longitude
+                      )
+                    : Infinity;
+
+                  return {
+                    ...item,
+                    distance
+                  };
+                })
+                .sort((a: any, b: any) => a.distance - b.distance)
+                .map((item: any) => (
+                  <Draggable key={item.location_name} id={item.location_name}>
+                    <div 
+                      style={{
+                        ...styles.draggableItem,
+                        position: 'relative',
+                        cursor: 'grab',
+                      }} 
+                      className="draggable-item"
+                    >
+                      <img 
+                        src={item.image_url} 
+                        alt={item.location_name}
+                        style={{
+                          ...styles.cardImage,
+                          transition: 'transform 0.3s ease',
+                        }}
+                      />
+                      <div style={styles.cardTitle}>
+                        {item.location_name}
+                      </div>
+                      {item.distance !== Infinity && (
+                        <DistanceLabel distance={item.distance} />
+                      )}
                     </div>
-                  </div>
-                </Draggable>
-              ))}
+                  </Draggable>
+                ))}
             </div>
           </div>
         </DndContext>
