@@ -40,7 +40,7 @@ export default function Page({label}:any) {
           })
           .catch((error) => console.error("Error fetching CSV:", error));
     //  const data = [{
-    //     image_url:"https://api.expolis.cloud/assets/opendata/t/kure/png/islands-sightseeing-1/%E6%B2%96%E5%8F%8B9_%E4%BA%94%E8%A7%92%E3%81%AE%E4%BA%95%E6%88%B8.png",
+    //     image_url:"https://api.expolis.cloud/assets/opendata/t/kure/png/islands-sightseeing-1/%E6%B2%96%E5%8F%8B9_%E4%BA%94%E8%A7%92%E3%81%AE%E4%BA%94%E6%88%B8.png",
     //     latitude
     //     : 
     //     34.16246,
@@ -51,7 +51,7 @@ export default function Page({label}:any) {
     //     : 
     //     132.83784},
     //     {
-    //       image_url:"https://api.expolis.cloud/assets/opendata/t/kure/png/islands-sightseeing-1/%E6%B2%96%E5%8F%8B9_%E4%BA%94%E8%A7%92%E3%81%AE%E4%BA%95%E6%88%B8.png",
+    //       image_url:"https://api.expolis.cloud/assets/opendata/t/kure/png/islands-sightseeing-1/%E6%B2%96%E5%8F%8B9_%E4%BA%94%E8%A7%92%E3%81%AE%E4%BA%94%E6%88%B8.png",
     //       latitude
     //       : 
     //       34.16246,
@@ -62,7 +62,7 @@ export default function Page({label}:any) {
     //       : 
     //       132.83784},
     //       {
-    //         image_url:"https://api.expolis.cloud/assets/opendata/t/kure/png/islands-sightseeing-1/%E6%B2%96%E5%8F%8B9_%E4%BA%94%E8%A7%92%E3%81%AE%E4%BA%95%E6%88%B8.png",
+    //         image_url:"https://api.expolis.cloud/assets/opendata/t/kure/png/islands-sightseeing-1/%E6%B2%96%E5%8F%8B9_%E4%BA%94%E8%A7%92%E3%81%AE%E4%BA%94%E6%88%B8.png",
     //         latitude
     //         : 
     //         34.16246,
@@ -334,50 +334,117 @@ console.log("choices",choices);
   );
   
   function handleDragEnd(event: DragEndEvent) {
-    const {over,active} = event;
-    console.log("over",over);
-    console.log("active",active);
-    if(family.length === 0){
-      if(over == null){}else{
-        console.log("aaa");
-        setFamily((prevItems: any) => [...prevItems, {parentId:over?.id,child: data.find((value:any) => value.location_name === active.id)}]); 
-        setChoices((prevItems: any) => prevItems.filter((value:any) => value.location_name !== active.id));
-      }
-    }else {
-      if(family.find(item=>item?.child?.location_name === active.id)){
-        if(over == null){
-          console.log("bbb");
-          setFamily((prevItems: any) => prevItems.filter((item:any) => item.child.location_name !== active.id));
-          setChoices((prevItems: any) => [...prevItems, data.find((value:any) => value.location_name === active.id)]); 
-        }else if(family.find(item=>item?.parentId == over?.id) == undefined){
-          console.log("ccc");
-          setFamily((prevItems: any) => prevItems.map((item:any) => item.child.location_name === active.id ? {...item,parentId:over?.id} : item));
-      }else{
-        console.log("ddd");
-        setFamily((prevItems: any) =>{
-          const afterStock = prevItems.find((obj:any)=>obj.parentId === over?.id);
-          const beforeStock = prevItems.find((obj:any)=>obj.child.location_name === active.id);
-          console.log("afterStock.child",afterStock.child);
-          console.log("beforeStock.child",beforeStock.child);
-          if(afterStock && beforeStock){
-            return prevItems.map((obj:any)=> obj.parentId === afterStock.parentId ? {...obj,child:beforeStock.child}: obj.parentId === beforeStock.parentId ? {...obj,child:afterStock.child}: obj);
+    const {over, active} = event;
+    
+    if (family.length === 0) {
+      if (over) {
+        setFamily((prevItems: any) => [
+          ...prevItems, 
+          {
+            parentId: over.id,
+            child: data.find((value:any) => value.location_name === active.id)
           }
-          return prevItems;
-        })
+        ]); 
+        setChoices((prevItems: any) => 
+          prevItems.filter((value:any) => value.location_name !== active.id)
+        );
       }
-      }else{
-        if(over == null){
-
-        }else if(family.find(familyItem=>familyItem.parentId === over.id) !== undefined){
-          console.log("eee");
-
-        }else{
-          console.log("family",family);
-          console.log("active.id_family",active.id);
-          console.log("fff");
-          console.log("family.find(familyItem=>familyItem.child?.location_name === active.id)",family.find(familyItem=>familyItem.child?.location_name === active.id));
-          setFamily((prevItems: any) => [...prevItems, {parentId:over?.id,child: data.find((value:any) => value.location_name === active.id)}]);
-          setChoices((prevItems: any) => prevItems.filter((value:any) => value.location_name !== active.id));
+    } else {
+      if (family.find(item => item?.child?.location_name === active.id)) {
+        if (!over) {
+          // ドラッグ要素を選択肢に戻す処理
+          setFamily((prevItems: any) => {
+            // 削除される要素の情報を取得
+            const itemToRemove = prevItems.find(
+              (item:any) => item.child.location_name === active.id
+            );
+            
+            if (!itemToRemove) return prevItems;
+            
+            const removedIndex = parseInt(itemToRemove.parentId.replace(/[^0-9]/g, ''), 10);
+            const remainingItems = prevItems.filter(
+              (item:any) => item.child.location_name !== active.id
+            );
+            
+            // A1の要素が削除された場合は、残りの要素のインデックスを更新
+            if (removedIndex === 1) {
+              return remainingItems;
+            }
+            
+            // それ以外の要素が削除された場合は、インデックスを振り直す
+            const reindexedItems = remainingItems
+              .sort((a:any, b:any) => {
+                const aIndex = parseInt(a.parentId.replace(/[^0-9]/g, ''), 10);
+                const bIndex = parseInt(b.parentId.replace(/[^0-9]/g, ''), 10);
+                return aIndex - bIndex;
+              })
+              .map((item:any, index:any) => ({
+                ...item,
+                parentId: `A${index + 1}`
+              }));
+            
+            return reindexedItems;
+          });
+          
+          setChoices((prevItems: any) => [
+            ...prevItems, 
+            data.find((value:any) => value.location_name === active.id)
+          ]); 
+          
+          // コンテナの更新（A1は削除しない）
+          setContainers(prev => {
+            const removedItemIndex = family.findIndex(
+              item => item.child?.location_name === active.id
+            );
+            const isFirstContainer = family[removedItemIndex]?.parentId === 'A1';
+            
+            if (prev.length > 1 && !isFirstContainer) {
+              const newContainers = prev.slice(0, -1);
+              return newContainers.map((_, index) => `A${index + 1}`);
+            }
+            return prev;
+          });
+        } else if (family.find(item => item?.parentId === over?.id) === undefined) {
+          // 別のドロップ先に移動する場合
+          setFamily((prevItems: any) => 
+            prevItems.map((item:any) => 
+              item.child.location_name === active.id 
+                ? {...item, parentId: over?.id} 
+                : item
+            )
+          );
+        } else {
+          // 要素を入れ替える場合
+          setFamily((prevItems: any) => {
+            const afterStock = prevItems.find((obj:any) => obj.parentId === over?.id);
+            const beforeStock = prevItems.find((obj:any) => 
+              obj.child.location_name === active.id
+            );
+            
+            if (afterStock && beforeStock) {
+              return prevItems.map((obj:any) => 
+                obj.parentId === afterStock.parentId 
+                  ? {...obj, child: beforeStock.child}
+                  : obj.parentId === beforeStock.parentId 
+                    ? {...obj, child: afterStock.child}
+                    : obj
+              );
+            }
+            return prevItems;
+          });
+        }
+      } else {
+        if (over && family.find(familyItem => familyItem.parentId === over.id) === undefined) {
+          setFamily((prevItems: any) => [
+            ...prevItems, 
+            {
+              parentId: over?.id,
+              child: data.find((value:any) => value.location_name === active.id)
+            }
+          ]);
+          setChoices((prevItems: any) => 
+            prevItems.filter((value:any) => value.location_name !== active.id)
+          );
         }
       }
     }
