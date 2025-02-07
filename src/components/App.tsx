@@ -11,6 +11,7 @@ import TimePickerContainer from './TimePickerContainer';
 import { Plus, Minus, PlusCircle, Trash2, MinusCircle } from 'lucide-react';
 import db from '../firebase';
 import { collection, getDocs, addDoc } from "firebase/firestore";  
+import { ChevronRight } from 'lucide-react'; // 矢印アイコンをインポート
 
 
 interface data {
@@ -38,12 +39,15 @@ export default function Page({label}:any) {
     const [containers, setContainers] = useState<string[]>(['A']);
     // 検索用の状態を追加
     const [searchQuery, setSearchQuery] = useState('');
+    const [searchQueryCourse, setSearchQueryCourse] = useState('');
     const CARDS_PER_ROW = 5;
     const INITIAL_ROWS = 3;
     const ROW_INCREMENT = 3;
     const [visibleRows, setVisibleRows] = useState(INITIAL_ROWS);
     const [sightseeingCourse, setSightseeingCourse] = useState<any[]>([]);
     const [tripTitle, setTripTitle] = useState("");
+    const [maxTotalDistance, setMaxTotalDistance] = useState<number>(20); // フィルター用の最大合計距離（km）
+
     
     useEffect(() => {
       fetch("/locations2.csv")
@@ -454,6 +458,53 @@ const filteredChoices = useMemo(() => {
   });
 }, [choices, selectedTags, searchQuery]);
 
+  // 2点間の距離を計算する関数（ヘーベルサイン公式）
+  const calculateDistance = (lat1: number, lon1: number, lat2: number, lon2: number): number => {
+    const R = 6371; // 地球の半径（km）
+    const dLat = (lat2 - lat1) * Math.PI / 180;
+    const dLon = (lon2 - lon1) * Math.PI / 180;
+    const a = 
+      Math.sin(dLat/2) * Math.sin(dLat/2) +
+      Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * 
+      Math.sin(dLon/2) * Math.sin(dLon/2);
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+    return R * c;
+  };
+
+  // 🚀 各観光プランの合計距離を計算する関数
+  const calculateTotalDistance = (destinations: any[]): number => {
+    if (!destinations || destinations.length < 2) return 0; // 2地点未満なら距離は0
+  
+    let totalDistance = 0;
+    for (let i = 0; i < destinations.length - 1; i++) {
+      totalDistance += calculateDistance(
+        destinations[i].latitude,
+        destinations[i].longitude,
+        destinations[i + 1].latitude,
+        destinations[i + 1].longitude
+      );
+    }
+  
+    return totalDistance; // 🔥 `string` ではなく `number` を返す
+  };
+
+
+const filteredSightseeingCourse = useMemo(() => {
+  if (!sightseeingCourse) return [];
+
+  return sightseeingCourse.filter((course: any) => {
+    const totalDistance = calculateTotalDistance(course.destinations); // 🔥 `number` 型になっている
+    return (
+      course.title.toLowerCase().includes(searchQueryCourse.toLowerCase()) &&
+      totalDistance <= maxTotalDistance // ✅ ここでエラーが出なくなる
+    );
+  });
+}, [sightseeingCourse, searchQueryCourse, maxTotalDistance]);
+
+
+
+
+
   // アルファベットのIDを生成する関数を追加
   const generateAlphabetId = (index: number): string => {
     return String.fromCharCode(65 + index); // 65は'A'のASCIIコード
@@ -610,18 +661,9 @@ const filteredChoices = useMemo(() => {
     });
   };
 
-  // 2点間の距離を計算する関数（ヘーベルサイン公式）
-  const calculateDistance = (lat1: number, lon1: number, lat2: number, lon2: number): number => {
-    const R = 6371; // 地球の半径（km）
-    const dLat = (lat2 - lat1) * Math.PI / 180;
-    const dLon = (lon2 - lon1) * Math.PI / 180;
-    const a = 
-      Math.sin(dLat/2) * Math.sin(dLat/2) +
-      Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * 
-      Math.sin(dLon/2) * Math.sin(dLon/2);
-    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
-    return R * c;
-  };
+
+
+  
 
   // 指定した位置から近い順に観光情報をソートする関数
   const sortByDistance = (targetLat: number, targetLon: number, items: any[]) => {
@@ -1031,32 +1073,110 @@ const filteredChoices = useMemo(() => {
             </button>
           )}
         </div>
-        <div style={{display:"flex", flexDirection:"column",marginTop:"108px"}}>
-        <div style={styles.tagContainer as React.CSSProperties}>
-                <div style={{...styles.tagTitleContainer, paddingLeft:"6px"}}>
-                <div style={styles.tagTitle}>みんなの観光</div>
-                <div style={styles.underline}></div>
-                </div>
-                {/* フィルターと検索のコンテナ */}
-              </div>
-        <div style={styles.sightseeing_courseContainer}>
-        {sightseeingCourse.map((course: any, courseIndex: number) => (
-  <div key={"course" + courseIndex}>
-    <h2 style={{fontSize:"24px", fontWeight:"bold", color:"var(--kure-blue)"}}>{course.title}</h2>
-    {course.destinations.map((destination: any, index: number) => (
-      <div key={"sightseeing" + courseIndex + index} style={styles.sightseeing_card}>
-        <img 
-          src={destination?.image_url} 
-          alt={destination.title} 
-          style={styles.sightseeing_cardImage as React.CSSProperties} 
-        />
-        <div style={styles.sightseeing_cardTitle}>{destination?.location_name}</div>
-      </div>
-    ))}
-  </div>
-))}
-</div>
+
+        <div style={{ display: "flex", flexDirection: "column", marginTop: "108px" }}>
+  <div style={styles.tagContainer as React.CSSProperties}>
+    <div style={{ ...styles.tagTitleContainer, paddingLeft: "6px" }}>
+      <div style={styles.tagTitle}>みんなの観光</div>
+      <div style={styles.underline}></div>
+    </div>
+            {/* 検索欄 */}
+            <div style={styles.searchContainer}>
+          <input
+            type="text"
+            placeholder="タイトルを検索"
+            value={searchQueryCourse}
+            onChange={(e) => setSearchQueryCourse(e.target.value)}
+            style={styles.searchInput}
+          />
+          <svg
+            style={styles.searchIcon}
+            xmlns="http://www.w3.org/2000/svg"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          >
+            <circle cx="11" cy="11" r="8"/>
+            <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+          </svg>
         </div>
+        <div style={{ display: "flex", alignItems: "center", gap: "1rem", marginBottom: "10px" }}>
+  <label>最大合計距離 (km):</label>
+  <input
+    type="number"
+    value={maxTotalDistance}
+    onChange={(e) => setMaxTotalDistance(Number(e.target.value))}
+    min="1"
+    max="100"
+    step="1"
+    style={{
+      width: "80px",
+      padding: "5px",
+      borderRadius: "5px",
+      border: "1px solid var(--kure-blue)",
+    }}
+  />
+</div>
+
+  </div>
+
+  {/* 各観光プランを縦に並べる */}
+  <div style={{ display: "flex", flexDirection: "column", gap: "20px", marginTop:"20px",marginLeft:"24px" }}>
+  {filteredSightseeingCourse.map((course: any, courseIndex: number) => {
+  const totalDistance = calculateTotalDistance(course.destinations); // 距離を計算
+  const totalDistanceText = `${totalDistance.toFixed(1)} km`; // 🔥 km を追加
+
+  return (
+    <div key={course.id} style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
+      {/* 🌟 タイトル + (合計距離 km) */}
+      <h2 style={{ fontSize: "24px", fontWeight: "bold", color: "var(--kure-blue)" }}>
+        {course.title} ({totalDistanceText}) {/* ✅ km を明示的に追加 */}
+      </h2>
+
+      {/* destinations を横に並べる (4つを超えたら横スクロール) */}
+      <div
+        style={{
+          display: "flex",
+          flexDirection: "row",
+          gap: "10px",
+          overflowX: course.destinations.length > 4 ? "auto" : "visible",
+          whiteSpace: "nowrap",
+          paddingBottom: "10px",
+          maxWidth: "100%",
+          alignItems: "center",
+        }}
+      >
+        {course.destinations.map((destination: any, index: number) => (
+          <div key={"sightseeing" + courseIndex + index} style={{ display: "flex", flexDirection: "row", alignItems: "center", gap: "10px" }}>
+            {/* 観光スポットカード */}
+            <div style={{ ...styles.sightseeing_card, flex: "0 0 auto" }}>
+              <img
+                src={destination?.image_url}
+                alt={destination.title}
+                style={styles.sightseeing_cardImage as React.CSSProperties}
+              />
+              <div style={styles.sightseeing_cardTitle}>{destination?.location_name}</div>
+            </div>
+
+            {/* 矢印アイコン (最後の要素の後には入れない) */}
+            {index < course.destinations.length - 1 && (
+              <ChevronRight size={24} color="var(--kure-blue)" />
+            )}
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+})}
+
+
+
+  </div>
+</div>
+
 
         {/* // ✅ `sightseeingCourse` をカードデザインで表示 */}
 
