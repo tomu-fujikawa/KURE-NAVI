@@ -9,6 +9,8 @@ import { Button } from './ui/button';
 import TimePicker from './TimePicker';
 import TimePickerContainer from './TimePickerContainer';
 import { Plus, Minus, PlusCircle, Trash2, MinusCircle } from 'lucide-react';
+import db from '../firebase';
+import { collection, getDocs, addDoc } from "firebase/firestore";  
 
 
 interface data {
@@ -34,13 +36,15 @@ export default function Page({label}:any) {
     const [selectedTags, setSelectedTags] = useState<Tag[]>([]);
     const [family, setFamily] = useState<family[]>([]);
     const [containers, setContainers] = useState<string[]>(['A']);
-    const [showAllCards, setShowAllCards] = useState(false);
     // 検索用の状態を追加
     const [searchQuery, setSearchQuery] = useState('');
     const CARDS_PER_ROW = 5;
     const INITIAL_ROWS = 3;
     const ROW_INCREMENT = 3;
     const [visibleRows, setVisibleRows] = useState(INITIAL_ROWS);
+    const [sightseeingCourse, setSightseeingCourse] = useState<any[]>([]);
+    const [tripTitle, setTripTitle] = useState("");
+    
     useEffect(() => {
       fetch("/locations2.csv")
           .then((response) => response.text())
@@ -55,44 +59,24 @@ export default function Page({label}:any) {
               setChoices(parsedData.data);
           })
           .catch((error) => console.error("Error fetching CSV:", error));
-    //  const data = [{
-    //     image_url:"https://api.expolis.cloud/assets/opendata/t/kure/png/islands-sightseeing-1/%E6%B2%96%E5%8F%8B9_%E4%BA%94%E8%A7%92%E3%81%AE%E4%BA%94%E6%88%B8.png",
-    //     latitude
-    //     : 
-    //     34.16246,
-    //     location_name
-    //     : 
-    //     "A",
-    //     longitude
-    //     : 
-    //     132.83784},
-    //     {
-    //       image_url:"https://api.expolis.cloud/assets/opendata/t/kure/png/islands-sightseeing-1/%E6%B2%96%E5%8F%8B9_%E4%BA%94%E8%A7%92%E3%81%AE%E4%BA%94%E6%88%B8.png",
-    //       latitude
-    //       : 
-    //       34.16246,
-    //       location_name
-    //       : 
-    //       "B",
-    //       longitude
-    //       : 
-    //       132.83784},
-    //       {
-    //         image_url:"https://api.expolis.cloud/assets/opendata/t/kure/png/islands-sightseeing-1/%E6%B2%96%E5%8F%8B9_%E4%BA%94%E8%A7%92%E3%81%AE%E4%BA%94%E6%88%B8.png",
-    //         latitude
-    //         : 
-    //         34.16246,
-    //         location_name
-    //         : 
-    //         "C",
-    //         longitude
-    //         : 
-    //         132.83784}];
-      // setChoices(data);
-      // setData(data);
 
-  }, []);
-  // const containers = ['A', 'B', 'C']
+      const fetchUsers = async () => {
+        try {
+          const querySnapshot = await getDocs(collection(db, "posts"));
+          const sightseeingData: any[] = [];
+          querySnapshot.forEach((doc) => {
+            sightseeingData.push({ id: doc.id, ...doc.data() });
+          });
+          setSightseeingCourse(sightseeingData);
+          console.log("sightseeingCourse",sightseeingCourse);
+        } catch (error) {
+          console.error("Error fetching sightseeing:", error);
+        }
+      };
+
+      fetchUsers();
+    }, []);
+
   const addPlan = () => {
     const nextLetter = String.fromCharCode(65 + containers.length); // A, B, C...
     setContainers([...containers, nextLetter]);
@@ -194,7 +178,6 @@ export default function Page({label}:any) {
     buttonContainer: {
       display: 'flex',
       gap: '1rem',
-      marginBottom: '2rem',
       justifyContent: 'center',
     },
     addButton: {
@@ -411,6 +394,42 @@ export default function Page({label}:any) {
       color: 'var(--kure-blue)',
       width: '1.25rem',
       height: '1.25rem',
+    },sightseeing_courseContainer: {
+      display: "grid",
+      gridTemplateColumns: "repeat(5, 200px)", // 5列のグリッド
+      justifyContent: "center",
+      gap: "1rem",
+      padding: "1rem",
+    },
+    sightseeing_card: {
+      padding: "0.5rem",
+      width: "200px",
+      textAlign: "center" as const,
+      display: "flex",
+      flexDirection: "column" as const,
+      gap: "0.5rem",
+      height: "200px",
+      transition: "transform 0.3s ease",
+      borderRadius: "8px",
+      boxShadow: "0 2px 4px rgba(0, 0, 0, 0.1)",
+      backgroundColor: "#fff",
+      overflow: "hidden",
+    },
+    sightseeing_cardImage: {
+      width: "100%",
+      height: "50%",
+      objectFit: "cover",
+      borderRadius: "8px 8px 0 0",
+    },
+    sightseeing_cardTitle: {
+      fontSize: "0.875rem",
+      fontWeight: "500",
+      color: "black",
+      height: "50%",
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "center",
+      padding: "0.5rem",
     },
 
   };
@@ -653,30 +672,6 @@ const filteredChoices = useMemo(() => {
     })));
   };
 
-  // const filteredChoices = useMemo(() => {
-  //   if (!choices || selectedTags.length === 0) return choices;
-  
-  //   console.log('=== フィルタリング実行 ===');
-  //   console.log('🎯 選択されたタグ:', selectedTags);
-  //   console.log('📍 フィルタリング前のデータ数:', choices.length);
-    
-  //   const filtered = choices.filter((item: data) => {
-  //     if (!item || !item.tag) return false;
-      
-  //     const itemTags = item.tag.split(', ');
-  //     // 選択されたタグをすべて含むものだけを表示
-  //     return selectedTags.every(tag => itemTags.includes(tag));
-  //   });
-    
-  //   console.log('✅ フィルタリング後のデータ数:', filtered.length);
-  //   console.log('📊 フィルタリング結果:', filtered.map((item: data) => ({
-  //     観光地名: item.location_name,
-  //     タグ: item.tag
-  //   })));
-    
-  //   return filtered;
-  // }, [choices, selectedTags]);
-
   const TagFilter = () => {
     const styles = {
       container: {
@@ -740,23 +735,94 @@ const filteredChoices = useMemo(() => {
     setVisibleRows(prev => Math.max(INITIAL_ROWS, prev - ROW_INCREMENT));
   };
 
+  const handleAddCourse = async() => {
+    if (!tripTitle || family.length === 0) {
+      alert("旅のタイトルを入力し、最低1つの観光地を追加してください。");
+      return;
+    }
+    // 現在の時刻を取得
+    const currentTime = new Date().toISOString();
+    
+    // 登録データを整形
+    const registrationData = {
+      title: tripTitle,  // ユーザーが入力した旅の名前
+      createdAt: currentTime,  // 現在の時刻
+      destinations: family.map(item => ({
+        location_name: item.child?.location_name || '',
+        latitude: item.child?.latitude || 0,
+        longitude: item.child?.longitude || 0,
+        image_url: item.child?.image_url || '',
+        explanation: item.child?.explanation || '',
+        tag: item.child?.tag || '',
+        visit_time: item.time || ''
+      }))
+    };
+    
+    try {
+      // Firebase Firestore にデータを追加
+      const docRef = await addDoc(collection(db, "posts"), registrationData);
+      console.log("登録成功！ ドキュメントID:", docRef.id);
+      alert("プランが登録されました！");
+  
+      // // 成功後にフォームをリセット
+      // setTripTitle("");
+      // setFamily([]);
+      // setContainers(['A']); // 初期状態に戻す
+    } catch (error) {
+      console.error("登録エラー:", error);
+      alert("プランの登録に失敗しました。");
+    }
+  };
+
   return (
     <div style={styles.container}>
       <div style={styles.card} className="container-card">
         <h1 style={styles.title as React.CSSProperties}>Kure-NAVI</h1>
         
-        
-        
-        <div style={styles.buttonContainer}>
-          <Button onClick={addPlan} style={styles.addButton}>
-            <Plus style={{ width: '1.25rem', height: '1.25rem' }} />
-            プランを追加
-          </Button>
-          <Button onClick={deletePlan} style={styles.deleteButton}>
-            <Minus style={{ width: '1.25rem', height: '1.25rem' }} />
-            プランを削除
+        <div style={{display:"flex", flexDirection:"row", alignItems:"center",gap:"52px", paddingLeft:"16px"}}>
+          <div style={{display:"flex", flexDirection:"row", alignItems:"center",gap:"40px", paddingLeft:"16px"}}>
+                    {/* 🔍 タイトル入力欄 */}
+            <input
+              type="text"
+              placeholder="旅のタイトルを入力"
+              value={tripTitle}
+              onChange={(e) => setTripTitle(e.target.value)}
+              style={{
+                padding: "0.5rem",
+                fontSize: "1rem",
+                borderRadius: "8px",
+                border: "2px solid var(--kure-blue)",
+                outline: "none",
+                width: "350px",
+              }}
+            />
+            <div style={styles.buttonContainer}>
+              <Button onClick={addPlan} style={styles.addButton}>
+                <Plus style={{ width: '1.25rem', height: '1.25rem' }} />
+                プランを追加
+              </Button>
+              <Button onClick={deletePlan} style={styles.deleteButton}>
+                <Minus style={{ width: '1.25rem', height: '1.25rem' }} />
+                プランを削除
+              </Button>
+            </div>
+          </div>
+          <Button 
+            onClick={handleAddCourse}
+            // disabled={!tripTitle || family.length === 0}
+            style={{
+              padding: "0.5rem 1rem",
+              borderRadius: "8px",
+              border: "none",
+              outline: "none",
+              width: "200px",
+              height: "100px",
+            }}
+          >
+            プランを登録
           </Button>
         </div>
+ 
 
         <DndContext onDragEnd={handleDragEnd}>
           <div style={styles.mainContent}>
@@ -965,6 +1031,35 @@ const filteredChoices = useMemo(() => {
             </button>
           )}
         </div>
+        <div style={{display:"flex", flexDirection:"column",marginTop:"108px"}}>
+        <div style={styles.tagContainer as React.CSSProperties}>
+                <div style={{...styles.tagTitleContainer, paddingLeft:"6px"}}>
+                <div style={styles.tagTitle}>みんなの観光</div>
+                <div style={styles.underline}></div>
+                </div>
+                {/* フィルターと検索のコンテナ */}
+              </div>
+        <div style={styles.sightseeing_courseContainer}>
+        {sightseeingCourse.map((course: any, courseIndex: number) => (
+  <div key={"course" + courseIndex}>
+    <h2 style={{fontSize:"24px", fontWeight:"bold", color:"var(--kure-blue)"}}>{course.title}</h2>
+    {course.destinations.map((destination: any, index: number) => (
+      <div key={"sightseeing" + courseIndex + index} style={styles.sightseeing_card}>
+        <img 
+          src={destination?.image_url} 
+          alt={destination.title} 
+          style={styles.sightseeing_cardImage as React.CSSProperties} 
+        />
+        <div style={styles.sightseeing_cardTitle}>{destination?.location_name}</div>
+      </div>
+    ))}
+  </div>
+))}
+</div>
+        </div>
+
+        {/* // ✅ `sightseeingCourse` をカードデザインで表示 */}
+
       </div>
     </div>
   );
