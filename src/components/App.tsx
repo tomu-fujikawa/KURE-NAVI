@@ -36,7 +36,6 @@ export default function Page({label}:any) {
     const [selectedTags, setSelectedTags] = useState<Tag[]>([]);
     const [family, setFamily] = useState<family[]>([]);
     const [containers, setContainers] = useState<string[]>(['A']);
-    const [showAllCards, setShowAllCards] = useState(false);
     // 検索用の状態を追加
     const [searchQuery, setSearchQuery] = useState('');
     const CARDS_PER_ROW = 5;
@@ -736,14 +735,17 @@ const filteredChoices = useMemo(() => {
     setVisibleRows(prev => Math.max(INITIAL_ROWS, prev - ROW_INCREMENT));
   };
 
-  const handleAddCourse = () => {
+  const handleAddCourse = async() => {
+    if (!tripTitle || family.length === 0) {
+      alert("旅のタイトルを入力し、最低1つの観光地を追加してください。");
+      return;
+    }
     // 現在の時刻を取得
     const currentTime = new Date().toISOString();
     
     // 登録データを整形
     const registrationData = {
       title: tripTitle,  // ユーザーが入力した旅の名前
-      id: `${tripTitle}-${currentTime}`,  // 旅の名前と時刻を組み合わせたID
       createdAt: currentTime,  // 現在の時刻
       destinations: family.map(item => ({
         location_name: item.child?.location_name || '',
@@ -755,9 +757,21 @@ const filteredChoices = useMemo(() => {
         visit_time: item.time || ''
       }))
     };
-
-    // 登録データをコンソールに表示
-    console.log("登録データ:", registrationData);  // 配列形式で表示
+    
+    try {
+      // Firebase Firestore にデータを追加
+      const docRef = await addDoc(collection(db, "posts"), registrationData);
+      console.log("登録成功！ ドキュメントID:", docRef.id);
+      alert("プランが登録されました！");
+  
+      // // 成功後にフォームをリセット
+      // setTripTitle("");
+      // setFamily([]);
+      // setContainers(['A']); // 初期状態に戻す
+    } catch (error) {
+      console.error("登録エラー:", error);
+      alert("プランの登録に失敗しました。");
+    }
   };
 
   return (
@@ -795,7 +809,7 @@ const filteredChoices = useMemo(() => {
           </div>
           <Button 
             onClick={handleAddCourse}
-            disabled={!tripTitle || family.length === 0}
+            // disabled={!tripTitle || family.length === 0}
             style={{
               padding: "0.5rem 1rem",
               borderRadius: "8px",
