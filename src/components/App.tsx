@@ -8,7 +8,7 @@ import Papa from "papaparse";
 import { Button } from './ui/button';
 import TimePicker from './TimePicker';
 import TimePickerContainer from './TimePickerContainer';
-import { Plus, Minus } from 'lucide-react';
+import { Plus, Minus, PlusCircle, Trash2, MinusCircle } from 'lucide-react';
 
 interface data {
   location_name: string;
@@ -79,9 +79,6 @@ export default function Page({label}:any) {
   // const containers = ['A', 'B', 'C'];
   const [family, setFamily] = useState<family[]>([]);
   const [containers, setContainers] = useState<string[]>(['A']);
-
-  console.log("data",data);
-console.log("choices",choices);
   const addPlan = () => {
     const nextLetter = String.fromCharCode(65 + containers.length); // A, B, C...
     setContainers([...containers, nextLetter]);
@@ -248,6 +245,192 @@ console.log("choices",choices);
       color: 'var(--kure-blue)',
       opacity: 0.5,
     },
+    controlButtons: {
+      position: 'absolute',
+      top: '-1.5rem',
+      right: '0',
+      display: 'flex',
+      gap: '0.5rem',
+      zIndex: 10,
+    },
+    controlButton: {
+      padding: '0.25rem',
+      borderRadius: '50%',
+      cursor: 'pointer',
+      backgroundColor: 'white',
+      border: 'none',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
+      width: '24px',
+      height: '24px',
+      minWidth: '24px',
+      minHeight: '24px',
+    },
+    buttonIcon: {
+      width: '16px',
+      height: '16px',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+    }
+  };
+
+  // アルファベットのIDを生成する関数を追加
+  const generateAlphabetId = (index: number): string => {
+    return String.fromCharCode(65 + index); // 65は'A'のASCIIコード
+  };
+
+  const addPlanAfter = (currentId: string) => {
+    const currentIndex = containers.indexOf(currentId);
+    
+    console.group('プラン追加処理の詳細');
+    console.log('=== 追加前の状態 ===');
+    console.log('🎯 ドラッグ先要素一覧:', containers);
+    console.log('📍 登録済み観光情報:', family.map(item => ({
+      ドラッグ先ID: item.parentId,
+      観光地名: item.child?.location_name,
+      時間: item.time
+    })));
+    console.log('➕ 追加位置のドラッグ先ID:', currentId);
+
+    // コンテナの更新
+    setContainers(prev => {
+      const newContainers = [...prev];
+      // 指定位置の後ろに新しいコンテナを挿入
+      newContainers.splice(currentIndex + 1, 0, generateAlphabetId(currentIndex + 1));
+      // それ以降のIDを更新
+      const updatedContainers = newContainers.map((_, index) => generateAlphabetId(index));
+      
+      console.log('=== ドラッグ先要素の更新 ===');
+      console.log('🎯 更新後のドラッグ先要素一覧:', updatedContainers);
+      return updatedContainers;
+    });
+
+    // family配列の更新
+    setFamily(prev => {
+      // 追加位置より後ろの要素のIDを更新
+      const updatedItems = prev.map(item => {
+        const itemIndex = containers.indexOf(item.parentId || '');
+        if (itemIndex === -1) return item;
+
+        // 追加位置より後ろの要素は1つ後ろのアルファベットに更新
+        if (itemIndex > currentIndex) {
+          return {
+            ...item,
+            parentId: generateAlphabetId(itemIndex + 1)
+          };
+        }
+        return item;
+      });
+
+      console.log('=== 登録済み観光情報の更新 ===');
+      console.log('📍 更新後の観光情報:', updatedItems.map(item => ({
+        ドラッグ先ID: item.parentId,
+        観光地名: item.child?.location_name,
+        時間: item.time
+      })));
+
+      console.log('=== 最終的な更新結果 ===');
+      console.log('🎯 最終的なドラッグ先要素:', containers.map((_, i) => generateAlphabetId(i)));
+      console.log('📍 最終的な登録済み観光情報:', updatedItems.map(item => ({
+        ドラッグ先ID: item.parentId,
+        観光地名: item.child?.location_name,
+        時間: item.time
+      })));
+      console.groupEnd();
+      return updatedItems;
+    });
+  };
+
+  const removePlan = (containerId: string) => {
+    if (containers.length <= 1) return;
+
+    console.group('プラン削除処理の詳細');
+    console.log('=== 削除前の状態 ===');
+    console.log('🎯 ドラッグ先要素一覧:', containers);
+    console.log('📍 登録済み観光情報:', family.map(item => ({
+      ドラッグ先ID: item.parentId,
+      観光地名: item.child?.location_name,
+      時間: item.time
+    })));
+    console.log('🗑️ 削除対象のドラッグ先ID:', containerId);
+
+    const removeIndex = containers.indexOf(containerId);
+
+    // コンテナの更新
+    setContainers(prev => {
+      if (prev.length <= 1) return prev;
+      // 削除後のコンテナを生成し、インデックスに基づいて新しいIDを割り当て
+      const newContainers = prev
+        .filter(id => id !== containerId)
+        .map((_, index) => generateAlphabetId(index));
+      
+      console.log('=== ドラッグ先要素の更新 ===');
+      console.log('🎯 更新後のドラッグ先要素一覧:', newContainers);
+      return newContainers;
+    });
+
+    // family配列の更新
+    setFamily(prev => {
+      const itemToRemove = prev.find(item => item.parentId === containerId);
+      console.log('=== 削除される観光情報 ===');
+      console.log('📍 削除対象:', itemToRemove ? {
+        ドラッグ先ID: itemToRemove.parentId,
+        観光地名: itemToRemove.child?.location_name,
+        時間: itemToRemove.time
+      } : '登録なし');
+      
+      if (itemToRemove?.child) {
+        setChoices((prevChoices: any) => {
+          const isDuplicate = prevChoices.some(
+            (choice: any) => choice.location_name === itemToRemove.child?.location_name
+          );
+          if (!isDuplicate) {
+            const updatedChoices = [...prevChoices, itemToRemove.child];
+            console.log('=== 選択肢に戻す観光情報 ===');
+            console.log('🔄 選択肢に戻す観光地:', itemToRemove.child?.location_name);
+            return updatedChoices;
+          }
+          return prevChoices;
+        });
+      }
+
+      // 削除対象以外の要素を保持し、新しいIDを割り当て
+      const remainingItems = prev.filter(item => item.parentId !== containerId);
+      const updatedItems = remainingItems.map(item => {
+        const currentIndex = containers.indexOf(item.parentId || '');
+        if (currentIndex === -1) return item;
+        
+        // 削除位置より後ろの要素は1つ前のアルファベットに更新
+        const newIndex = currentIndex > removeIndex 
+          ? currentIndex - 1 
+          : currentIndex;
+        
+        return {
+          ...item,
+          parentId: generateAlphabetId(newIndex)
+        };
+      });
+
+      console.log('=== 残りの登録済み観光情報 ===');
+      console.log('📍 更新後の観光情報:', updatedItems.map(item => ({
+        ドラッグ先ID: item.parentId,
+        観光地名: item.child?.location_name,
+        時間: item.time
+      })));
+
+      console.log('=== 最終的な更新結果 ===');
+      console.log('🎯 最終的なドラッグ先要素:', containers.filter(id => id !== containerId).map((_, i) => generateAlphabetId(i)));
+      console.log('📍 最終的な登録済み観光情報:', updatedItems.map(item => ({
+        ドラッグ先ID: item.parentId,
+        観光地名: item.child?.location_name,
+        時間: item.time
+      })));
+      console.groupEnd();
+      return updatedItems;
+    });
   };
 
   return (
@@ -279,6 +462,29 @@ console.log("choices",choices);
                     />
                     <Droppable id={id}>
                       <div style={styles.droppableBox as React.CSSProperties}>
+                        <div style={styles.controlButtons as React.CSSProperties}>
+                          <button
+                            style={styles.controlButton}
+                            onClick={() => addPlanAfter(id)}
+                            title="このプランの後に追加"
+                          >
+                            <div style={styles.buttonIcon}>
+                              <PlusCircle size={16} color="var(--kure-blue)" />
+                            </div>
+                          </button>
+                          {containers.length > 1 && (
+                            <button
+                              style={styles.controlButton}
+                              onClick={() => removePlan(id)}
+                              title="このプランを削除"
+                            >
+                              <div style={styles.buttonIcon}>
+                                {/* <Trash2 size={16} color="var(--kure-red)" /> */}
+                                <MinusCircle size={16} color="var(--kure-red)" />
+                              </div>
+                            </button>
+                          )}
+                        </div>
                         {family.length > 0 ? (
                           (() => {
                             const foundItem = family.find((item) => item.parentId === id);
@@ -336,6 +542,16 @@ console.log("choices",choices);
   function handleDragEnd(event: DragEndEvent) {
     const {over, active} = event;
     
+    console.group('ドラッグ&ドロップ操作の結果');
+    console.log('=== 現在の状態 ===');
+    console.log('🎯 ドラッグ先要素一覧:', containers);
+    console.log('📍 登録済み観光情報:', family.map(item => ({
+      ドラッグ先ID: item.parentId,
+      観光地名: item.child?.location_name,
+      時間: item.time
+    })));
+    console.groupEnd();
+    
     if (family.length === 0) {
       if (over) {
         setFamily((prevItems: any) => [
@@ -361,26 +577,26 @@ console.log("choices",choices);
             
             if (!itemToRemove) return prevItems;
             
-            const removedIndex = parseInt(itemToRemove.parentId.replace(/[^0-9]/g, ''), 10);
+            const removedIndex = containers.indexOf(itemToRemove.parentId);
             const remainingItems = prevItems.filter(
               (item:any) => item.child.location_name !== active.id
             );
             
             // A1の要素が削除された場合は、残りの要素のインデックスを更新
-            if (removedIndex === 1) {
+            if (removedIndex === 0) {
               return remainingItems;
             }
             
             // それ以外の要素が削除された場合は、インデックスを振り直す
             const reindexedItems = remainingItems
               .sort((a:any, b:any) => {
-                const aIndex = parseInt(a.parentId.replace(/[^0-9]/g, ''), 10);
-                const bIndex = parseInt(b.parentId.replace(/[^0-9]/g, ''), 10);
+                const aIndex = containers.indexOf(a.parentId);
+                const bIndex = containers.indexOf(b.parentId);
                 return aIndex - bIndex;
               })
               .map((item:any, index:any) => ({
                 ...item,
-                parentId: `A${index + 1}`
+                parentId: containers[index]
               }));
             
             return reindexedItems;
@@ -400,7 +616,7 @@ console.log("choices",choices);
             
             if (prev.length > 1 && !isFirstContainer) {
               const newContainers = prev.slice(0, -1);
-              return newContainers.map((_, index) => `A${index + 1}`);
+              return newContainers.map((_, index) => containers[index]);
             }
             return prev;
           });
