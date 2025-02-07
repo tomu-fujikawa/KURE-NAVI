@@ -10,6 +10,7 @@ import TimePicker from './TimePicker';
 import TimePickerContainer from './TimePickerContainer';
 import { Plus, Minus, PlusCircle, Trash2, MinusCircle } from 'lucide-react';
 
+
 interface data {
   location_name: string;
   latitude: number;
@@ -33,6 +34,11 @@ export default function Page({label}:any) {
     const [selectedTags, setSelectedTags] = useState<Tag[]>([]);
     const [family, setFamily] = useState<family[]>([]);
     const [containers, setContainers] = useState<string[]>(['A']);
+    const [showAllCards, setShowAllCards] = useState(false);
+    const CARDS_PER_ROW = 5;
+    const INITIAL_ROWS = 3;
+    const ROW_INCREMENT = 3;
+    const [visibleRows, setVisibleRows] = useState(INITIAL_ROWS);
     useEffect(() => {
       fetch("/locations2.csv")
           .then((response) => response.text())
@@ -309,7 +315,74 @@ export default function Page({label}:any) {
       width: '14px',
       height: '14px',
       marginRight: '2px',
-    }
+    },
+    tagContainer:{
+      width: '100%', 
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'flex-start',
+      gap: '2rem',
+      flexWrap: 'wrap' as const,
+      paddingLeft: '1rem',
+      fontSize: '1.5rem',
+      fontWeight: 'bold',
+      color: 'var(--kure-navy)',
+    },
+    tagTitleContainer:{
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      gap: '0.1rem',
+      flexWrap: 'wrap' as const,
+    },
+    tagTitle:{
+      fontSize: '2rem',
+      fontWeight: 'bold',
+      color: 'var(--kure-navy)',
+    },
+    underline:{
+      width: '100%',
+      height: '4px',
+      backgroundColor: 'var(--kure-navy)',
+    },
+    showMoreButton: {
+      backgroundColor: 'var(--kure-blue)',
+      color: 'white',
+      padding: '0.75rem 2rem',
+      borderRadius: '0.75rem',
+      fontSize: '1rem',
+      fontWeight: '600',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      gap: '0.5rem',
+      cursor: 'pointer',
+      border: 'none',
+      boxShadow: '0 4px 12px rgba(33, 150, 243, 0.2)',
+      transition: 'all 0.3s ease',
+    },showLessButton: {
+      backgroundColor: 'white',
+      border: '1px solid var(--kure-blue)',
+      color: 'var(--kure-blue)',
+      padding: '0.75rem 2rem',
+      borderRadius: '0.75rem',
+      fontSize: '1rem',
+      fontWeight: '600',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      gap: '0.5rem',
+      cursor: 'pointer',
+      boxShadow: '0 4px 12px rgba(33, 150, 243, 0.2)',
+      transition: 'all 0.3s ease',
+    },
+    buttonWrapper: {
+      width: '100%',
+      display: 'flex',
+      justifyContent: 'center',
+      marginTop: '1rem',
+      gap: '1rem',
+    },
   };
 
   // アルファベットのIDを生成する関数を追加
@@ -560,7 +633,6 @@ export default function Page({label}:any) {
         display: 'flex',
         gap: '0.5rem',
         flexWrap: 'wrap' as const,
-        marginBottom: '1rem',
         justifyContent: 'center',
       },
       tag: {
@@ -608,6 +680,16 @@ export default function Page({label}:any) {
     console.log("🎯 フィルター適用前のデータ:", choices);
     console.log("✅ フィルター適用後のデータ:", filteredChoices);
   }, [filteredChoices, choices, selectedTags]);
+
+  // ボタンのクリックハンドラー
+  const handleShowMore = () => {
+    setVisibleRows(prev => prev + ROW_INCREMENT);
+  };
+
+  const handleShowLess = () => {
+    setVisibleRows(prev => Math.max(INITIAL_ROWS, prev - ROW_INCREMENT));
+  };
+
   return (
     <div style={styles.container}>
       <div style={styles.card} className="container-card">
@@ -697,8 +779,15 @@ export default function Page({label}:any) {
                 ))}
               </div>
             </div>
-            <TagFilter />
-            <div style={styles.choicesContainer}>
+            <div>
+            <div style={styles.tagContainer as React.CSSProperties}>
+                <div style={styles.tagTitleContainer}>
+                <div style={styles.tagTitle}>観光地リスト</div>
+                <div style={styles.underline}></div>
+                </div>
+                <TagFilter />
+              </div>
+              <div style={styles.choicesContainer}>
               {filteredChoices && filteredChoices
                 .map((item: any) => {
                   const referencePoint = family.length > 0 
@@ -720,6 +809,8 @@ export default function Page({label}:any) {
                   };
                 })
                 .sort((a: any, b: any) => a.distance - b.distance)
+                // 表示数を制限
+                .slice(0, CARDS_PER_ROW * visibleRows)
                 .map((item: any) => (
                   <Draggable key={item.location_name} id={item.location_name}>
                     <div 
@@ -768,8 +859,34 @@ export default function Page({label}:any) {
                   </Draggable>
                 ))}
             </div>
+            </div>
+            
           </div>
         </DndContext>
+        {/* ボタンコントロール */}
+        <div style={styles.buttonWrapper}>
+           {/* もっと見るボタン - まだ表示できるカードが残っているときのみ表示 */}
+           {filteredChoices && 
+           filteredChoices.length > CARDS_PER_ROW * visibleRows && (
+            <button
+              onClick={handleShowMore}
+              style={styles.showMoreButton}
+              className="hover:shadow-lg hover:-translate-y-1"
+            >
+              もっと見る
+            </button>
+          )}
+          {/* 表示を減らすボタン - 6行以上表示されているときのみ表示 */}
+          {visibleRows > INITIAL_ROWS && (
+            <button
+              onClick={handleShowLess}
+              style={styles.showLessButton}
+              className="hover:shadow-lg hover:-translate-y-1 mr-2"
+            >
+              表示を減らす
+            </button>
+          )}
+        </div>
       </div>
     </div>
   );
