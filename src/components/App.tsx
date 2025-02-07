@@ -63,15 +63,14 @@ export default function Page({label}:any) {
       const fetchUsers = async () => {
         try {
           const querySnapshot = await getDocs(collection(db, "posts"));
-          const userData: any[] = [];
+          const sightseeingData: any[] = [];
           querySnapshot.forEach((doc) => {
-            userData.push({ id: doc.id, ...doc.data() });
+            sightseeingData.push({ id: doc.id, ...doc.data() });
           });
-          setSightseeingCourse(userData);
-          console.log("db", db);
-          console.log("userData",userData);
+          setSightseeingCourse(sightseeingData);
+          console.log("sightseeingCourse",sightseeingCourse);
         } catch (error) {
-          console.error("Error fetching users:", error);
+          console.error("Error fetching sightseeing:", error);
         }
       };
 
@@ -396,6 +395,42 @@ export default function Page({label}:any) {
       color: 'var(--kure-blue)',
       width: '1.25rem',
       height: '1.25rem',
+    },sightseeing_courseContainer: {
+      display: "grid",
+      gridTemplateColumns: "repeat(5, 200px)", // 5列のグリッド
+      justifyContent: "center",
+      gap: "1rem",
+      padding: "1rem",
+    },
+    sightseeing_card: {
+      padding: "0.5rem",
+      width: "200px",
+      textAlign: "center" as const,
+      display: "flex",
+      flexDirection: "column" as const,
+      gap: "0.5rem",
+      height: "200px",
+      transition: "transform 0.3s ease",
+      borderRadius: "8px",
+      boxShadow: "0 2px 4px rgba(0, 0, 0, 0.1)",
+      backgroundColor: "#fff",
+      overflow: "hidden",
+    },
+    sightseeing_cardImage: {
+      width: "100%",
+      height: "50%",
+      objectFit: "cover",
+      borderRadius: "8px 8px 0 0",
+    },
+    sightseeing_cardTitle: {
+      fontSize: "0.875rem",
+      fontWeight: "500",
+      color: "black",
+      height: "50%",
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "center",
+      padding: "0.5rem",
     },
 
   };
@@ -926,7 +961,29 @@ const filteredChoices = useMemo(() => {
             </button>
           )}
         </div>
-        みんなの観光
+        <div style={styles.tagContainer as React.CSSProperties}>
+                <div style={{...styles.tagTitleContainer, paddingLeft:"6px"}}>
+                <div style={styles.tagTitle}>みんなの観光</div>
+                <div style={styles.underline}></div>
+                </div>
+                {/* フィルターと検索のコンテナ */}
+              </div>
+        {/* // ✅ `sightseeingCourse` をカードデザインで表示 */}
+<div style={styles.sightseeing_courseContainer}>
+  {sightseeingCourse.map((course: any, courseIndex: number) => (
+    course.destinations.map((destination: any, index: number) => (
+      <div key={"sightseeing" + courseIndex + index} style={styles.sightseeing_card}>
+      <img 
+        src={destination?.image_url} 
+        alt={destination.title} 
+        style={styles.sightseeing_cardImage as React.CSSProperties} 
+      />
+      <div style={styles.sightseeing_cardTitle}>{destination?.location_name}</div>
+    </div>
+    ))
+    
+  ))}
+</div>
       </div>
     </div>
   );
