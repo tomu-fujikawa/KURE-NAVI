@@ -8,7 +8,7 @@ import Papa from "papaparse";
 import { Button } from './ui/button';
 import TimePicker from './TimePicker';
 import TimePickerContainer from './TimePickerContainer';
-import { Plus, Minus, PlusCircle, Trash2, MinusCircle } from 'lucide-react';
+import { Plus, Minus, PlusCircle, Trash2, MinusCircle, Map } from 'lucide-react';
 import db from '../firebase';
 import { collection, getDocs, addDoc } from "firebase/firestore";  
 import { ChevronRight } from 'lucide-react'; // 矢印アイコンをインポート
@@ -440,7 +440,20 @@ export default function Page({label}:any) {
       justifyContent: "center",
       padding: "0.5rem",
     },
-
+    locationTitleContainer: {
+      display: 'flex',
+      alignItems: 'center',
+      gap: '8px',
+      transition: 'opacity 0.2s ease',
+      ':hover': {
+        opacity: 0.7,
+      }
+    },
+    mapIcon: {
+      width: '1.25rem',
+      height: '1.25rem',
+      color: 'white',
+    },
   };
 
 // フィルタリングロジックの更新
@@ -945,9 +958,28 @@ const filteredSightseeingCourse = useMemo(() => {
                                     >
                                       {hoveredDraggableLocation === foundItem.child?.location_name ? (
                                         <div style={{ textAlign: 'left' }}>
-                                          <h3 style={{ fontSize: '1.5rem', fontWeight: 'bold', color: 'white', marginBottom:"4px" }}>
-                                            {foundItem.child?.location_name}
-                                          </h3>
+                                          <a 
+                                            href={`https://www.google.com/maps?q=${foundItem.child?.latitude},${foundItem.child?.longitude}`} 
+                                            target="_blank" 
+                                            rel="noopener noreferrer" 
+                                            style={{ 
+                                              display: 'flex',
+                                              flexDirection: 'row',
+                                              alignItems: 'flex-start',
+                                              justifyContent: 'flex-start',
+                                              textDecoration: 'underline', // ✅ 下線を明示的に指定
+                                            }}
+                                          >
+                                            <div 
+                                              style={styles.locationTitleContainer} 
+                                              className="hover:opacity-70"
+                                            >
+                                              <span style={{ fontSize: '1.5rem', fontWeight: 'bold', color: 'white', marginBottom: "4px" }}>
+                                                {foundItem.child?.location_name}
+                                              </span>
+                                              <Map style={styles.mapIcon} />
+                                            </div>
+                                          </a>
                                           <p style={{ fontSize: '0.875rem', color: 'white', overflowWrap: 'break-word' }}>
                                             {foundItem.child?.explanation}
                                           </p>
