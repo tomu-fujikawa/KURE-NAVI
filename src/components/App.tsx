@@ -12,6 +12,7 @@ import { Plus, Minus, PlusCircle, Trash2, MinusCircle } from 'lucide-react';
 import db from '../firebase';
 import { collection, getDocs, addDoc } from "firebase/firestore";  
 import { ChevronRight } from 'lucide-react'; // 矢印アイコンをインポート
+import React from 'react';
 
 
 interface data {
@@ -891,90 +892,102 @@ const filteredSightseeingCourse = useMemo(() => {
           <div style={styles.mainContent}>
             <div style={styles.scrollContainer as React.CSSProperties}>
               <div style={styles.timePickerAndDroppableWrapper}>
-                {containers.map((id) => (
-                  <div key={id} style={{ width: '16rem' }}>
-                    <TimePickerContainer
-                      containers={[id]}
-                      family={family}
-                      onTimeChange={handleTimeChange}
-                    />
-                    <Droppable id={id}>
-                      <div style={styles.droppableBox as React.CSSProperties}>
-                        <div style={styles.controlButtons as React.CSSProperties}>
-                          <button
-                            style={styles.controlButton}
-                            onClick={() => addPlanAfter(id)}
-                            title="このプランの後に追加"
-                          >
-                            <div style={styles.buttonIcon}>
-                              <PlusCircle size={16} color="var(--kure-blue)" />
-                            </div>
-                          </button>
-                          {containers.length > 1 && (
+                {containers.map((id, index) => (
+                  <React.Fragment key={id}>
+                    <div style={{ width: '16rem' }}>
+                      <TimePickerContainer
+                        containers={[id]}
+                        family={family}
+                        onTimeChange={handleTimeChange}
+                      />
+                      <Droppable id={id}>
+                        <div style={styles.droppableBox as React.CSSProperties}>
+                          <div style={styles.controlButtons as React.CSSProperties}>
                             <button
                               style={styles.controlButton}
-                              onClick={() => removePlan(id)}
-                              title="このプランを削除"
+                              onClick={() => addPlanAfter(id)}
+                              title="このプランの後に追加"
                             >
                               <div style={styles.buttonIcon}>
-                                {/* <Trash2 size={16} color="var(--kure-red)" /> */}
-                                <MinusCircle size={16} color="var(--kure-red)" />
+                                <PlusCircle size={16} color="var(--kure-blue)" />
                               </div>
                             </button>
+                            {containers.length > 1 && (
+                              <button
+                                style={styles.controlButton}
+                                onClick={() => removePlan(id)}
+                                title="このプランを削除"
+                              >
+                                <div style={styles.buttonIcon}>
+                                  {/* <Trash2 size={16} color="var(--kure-red)" /> */}
+                                  <MinusCircle size={16} color="var(--kure-red)" />
+                                </div>
+                              </button>
+                            )}
+                          </div>
+                          {family.length > 0 ? (
+                            (() => {
+                              const foundItem = family.find((item) => item.parentId === id);
+                              return foundItem ? (
+                                <div style={styles.draggableContent}>
+                                  <Draggable key={foundItem.child?.location_name} id={foundItem.child?.location_name || ''} hoverItem={hoveredLocation || undefined} cardTitle={foundItem.child?.location_name || ''}>
+                                    <div 
+                                      style={styles.draggableItem} 
+                                      className="draggable-item"
+                                      onMouseEnter={() => {
+                                        handleItemHover(foundItem); // 既存のホバー処理
+                                        setHoveredDraggableLocation(foundItem.child?.location_name || null); // 新しいホバー処理
+                                      }}
+                                      onMouseLeave={() => {
+                                        handleItemLeave(); // 既存のホバー解除処理
+                                        setHoveredDraggableLocation(null); // 新しいホバー解除処理
+                                      }}
+                                    >
+                                      {hoveredDraggableLocation === foundItem.child?.location_name ? (
+                                        <div style={{ textAlign: 'left' }}>
+                                          <h3 style={{ fontSize: '1.5rem', fontWeight: 'bold', color: 'white', marginBottom:"4px" }}>
+                                            {foundItem.child?.location_name}
+                                          </h3>
+                                          <p style={{ fontSize: '0.875rem', color: 'white', overflowWrap: 'break-word' }}>
+                                            {foundItem.child?.explanation}
+                                          </p>
+                                        </div>
+                                      ) : (
+                                        <>
+                                          <img 
+                                            src={foundItem.child?.image_url} 
+                                            alt={foundItem.child?.location_name}
+                                            style={styles.cardImage as React.CSSProperties}
+                                          />
+                                          <div style={{...styles.cardTitle, marginTop:"10px"}}>
+                                            {foundItem.child?.location_name}
+                                          </div>
+                                        </>
+                                      )}
+                                    </div>
+                                  </Draggable>
+                                </div>
+                              ) : (
+                                <div style={styles.dropPlaceholder as React.CSSProperties}>ここにドロップ</div>
+                              );
+                            })()
+                          ) : (
+                            <div style={styles.dropPlaceholder as React.CSSProperties}>ここにドロップ</div>
                           )}
                         </div>
-                        {family.length > 0 ? (
-                          (() => {
-                            const foundItem = family.find((item) => item.parentId === id);
-                            return foundItem ? (
-                              <div style={styles.draggableContent}>
-                                <Draggable key={foundItem.child?.location_name} id={foundItem.child?.location_name || ''} hoverItem={hoveredLocation || undefined} cardTitle={foundItem.child?.location_name || ''}>
-                                  <div 
-                                    style={styles.draggableItem} 
-                                    className="draggable-item"
-                                    onMouseEnter={() => {
-                                      handleItemHover(foundItem); // 既存のホバー処理
-                                      setHoveredDraggableLocation(foundItem.child?.location_name || null); // 新しいホバー処理
-                                    }}
-                                    onMouseLeave={() => {
-                                      handleItemLeave(); // 既存のホバー解除処理
-                                      setHoveredDraggableLocation(null); // 新しいホバー解除処理
-                                    }}
-                                  >
-                                    {hoveredDraggableLocation === foundItem.child?.location_name ? (
-                                      <div style={{ textAlign: 'left' }}>
-                                        <h3 style={{ fontSize: '1.5rem', fontWeight: 'bold', color: 'white', marginBottom:"4px" }}>
-                                          {foundItem.child?.location_name}
-                                        </h3>
-                                        <p style={{ fontSize: '0.875rem', color: 'white', overflowWrap: 'break-word' }}>
-                                          {foundItem.child?.explanation}
-                                        </p>
-                                      </div>
-                                    ) : (
-                                      <>
-                                        <img 
-                                          src={foundItem.child?.image_url} 
-                                          alt={foundItem.child?.location_name}
-                                          style={styles.cardImage as React.CSSProperties}
-                                        />
-                                        <div style={{...styles.cardTitle, marginTop:"10px"}}>
-                                          {foundItem.child?.location_name}
-                                        </div>
-                                      </>
-                                    )}
-                                  </div>
-                                </Draggable>
-                              </div>
-                            ) : (
-                              <div style={styles.dropPlaceholder as React.CSSProperties}>ここにドロップ</div>
-                            );
-                          })()
-                        ) : (
-                          <div style={styles.dropPlaceholder as React.CSSProperties}>ここにドロップ</div>
-                        )}
-                      </div>
-                    </Droppable>
-                  </div>
+                      </Droppable>
+                    </div>
+                    {index < containers.length - 1 && (
+                      <ChevronRight 
+                        size={24} 
+                        color="var(--kure-blue)"
+                        style={{
+                          alignSelf: 'center',
+                          marginTop: '2.5rem'
+                        }}
+                      />
+                    )}
+                  </React.Fragment>
                 ))}
               </div>
             </div>
