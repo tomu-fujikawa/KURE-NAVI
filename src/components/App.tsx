@@ -76,7 +76,7 @@ export default function Page({label}:any) {
             sightseeingData.push({ id: doc.id, ...doc.data() });
           });
           setSightseeingCourse(sightseeingData);
-          console.log("sightseeingCourse",sightseeingCourse);
+          console.log("sightseeingData",sightseeingData);
         } catch (error) {
           console.error("Error fetching sightseeing:", error);
         }
