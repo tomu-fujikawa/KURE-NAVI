@@ -6,9 +6,11 @@ import {CSS} from '@dnd-kit/utilities';
 type DraggableProps = {
   children: React.ReactNode;
   id: string;
+  hoverItem: string | undefined;
+  cardTitle: string;
 };
 
-export default function Draggable({children, id}: DraggableProps) {
+export default function Draggable({children, id, hoverItem, cardTitle}: DraggableProps) {
   const {attributes, listeners, setNodeRef, transform} = useDraggable({
     id: id,
   });
@@ -23,6 +25,7 @@ export default function Draggable({children, id}: DraggableProps) {
       style={{
         ...style,
         width: '100%',
+        zIndex: hoverItem === cardTitle ? 1000 : 1,
       }}
       {...listeners} 
       {...attributes}
