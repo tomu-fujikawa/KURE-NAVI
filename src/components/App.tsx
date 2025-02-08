@@ -842,7 +842,7 @@ const filteredSightseeingCourse = useMemo(() => {
       <div style={styles.card} className="container-card">
         <h1 style={styles.title as React.CSSProperties}>Kure-NAVI</h1>
         
-        <div style={{display:"flex", flexDirection:"row", alignItems:"center",gap:"52px", paddingLeft:"16px"}}>
+        <div style={{display:"flex", flexDirection:"row", alignItems:"center",gap:"52px",justifyContent:"center"}}>
           <div style={{display:"flex", flexDirection:"row", alignItems:"center",gap:"40px", paddingLeft:"16px"}}>
                     {/* 🔍 タイトル入力欄 */}
             <input
