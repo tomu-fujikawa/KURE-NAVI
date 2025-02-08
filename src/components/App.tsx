@@ -50,6 +50,7 @@ export default function Page({label}:any) {
     const [hoveredLocation, setHoveredLocation] = useState<string | null>(null); // ホバーした観光地のIDを保持
     const [everyonHoveredLocation, setEveryoneHoveredLocation] = useState<string | null>(null); // ホバーした観光地のIDを保持
     const [everyoneHoveredTitle, setEveryoneHoveredTitle] = useState<string | null>(null); // ホバーした観光地のIDを保持
+    const [hoveredDraggableLocation, setHoveredDraggableLocation] = useState<string | null>(null); // 新しい状態変数を追加
     
     useEffect(() => {
       fetch("/locations3.csv")
@@ -931,16 +932,36 @@ const filteredSightseeingCourse = useMemo(() => {
                                   <div 
                                     style={styles.draggableItem} 
                                     className="draggable-item"
-                                    onClick={() => handleItemClick(foundItem)}
+                                    onMouseEnter={() => {
+                                      handleItemHover(foundItem); // 既存のホバー処理
+                                      setHoveredDraggableLocation(foundItem.child?.location_name || null); // 新しいホバー処理
+                                    }}
+                                    onMouseLeave={() => {
+                                      handleItemLeave(); // 既存のホバー解除処理
+                                      setHoveredDraggableLocation(null); // 新しいホバー解除処理
+                                    }}
                                   >
-                                    <img 
-                                      src={foundItem.child?.image_url} 
-                                      alt={foundItem.child?.location_name}
-                                      style={styles.cardImage as React.CSSProperties}
-                                    />
-                                    <div style={{...styles.cardTitle, marginTop:"10px"}}>
-                                      {foundItem.child?.location_name}
-                                    </div>
+                                    {hoveredDraggableLocation === foundItem.child?.location_name ? (
+                                      <div style={{ textAlign: 'left' }}>
+                                        <h3 style={{ fontSize: '1.5rem', fontWeight: 'bold', color: 'white', marginBottom:"4px" }}>
+                                          {foundItem.child?.location_name}
+                                        </h3>
+                                        <p style={{ fontSize: '0.875rem', color: 'white', overflowWrap: 'break-word' }}>
+                                          {foundItem.child?.explanation}
+                                        </p>
+                                      </div>
+                                    ) : (
+                                      <>
+                                        <img 
+                                          src={foundItem.child?.image_url} 
+                                          alt={foundItem.child?.location_name}
+                                          style={styles.cardImage as React.CSSProperties}
+                                        />
+                                        <div style={{...styles.cardTitle, marginTop:"10px"}}>
+                                          {foundItem.child?.location_name}
+                                        </div>
+                                      </>
+                                    )}
                                   </div>
                                 </Draggable>
                               </div>
@@ -1199,12 +1220,22 @@ const filteredSightseeingCourse = useMemo(() => {
              > 
              {everyonHoveredLocation == destination.location_name && everyoneHoveredTitle == course.title ? (
               <div style={{ textAlign: 'left' }}>
-                <h3 style={{ fontSize: '1.5rem', fontWeight: 'bold', color: 'var(--kure-blue)' }}>
+                <h3
+                  style={{
+                    fontSize: "1.5rem",
+                    fontWeight: "bold",
+                    color: "var(--kure-blue)",
+                    whiteSpace: "nowrap", // 改行を防ぐ
+                    overflow: "hidden", // はみ出した部分を非表示
+                    textOverflow: "ellipsis", // 省略記号（...）を表示
+                    maxWidth: "100%", // 親要素の幅を超えないようにする
+                  }}
+                >
                   {destination.location_name}
                 </h3>
                 <p style={{ 
                   fontSize: '0.875rem', 
-                  color: 'gray', 
+                  color: 'black', 
                   overflowWrap: 'break-word',
                   wordBreak: 'break-word',
                   whiteSpace: 'pre-wrap', // 改行と折り返しを許可
@@ -1220,7 +1251,17 @@ const filteredSightseeingCourse = useMemo(() => {
                 alt={destination.title}
                 style={styles.sightseeing_cardImage as React.CSSProperties}
               />
-              <div style={styles.sightseeing_cardTitle}>{destination?.location_name}</div>
+              <div style={{...styles.sightseeing_cardTitle, 
+                      fontSize: "1rem",
+                      fontWeight: "500",
+                      overflowWrap: "break-word",
+                      wordBreak: "break-word",
+                      whiteSpace: "pre-wrap",
+                      maxWidth: "100%",
+                      marginTop: "10px",
+                      marginBottom: "4px",
+                      
+              }}>{destination?.location_name}</div>
               </div>
              )}
 
