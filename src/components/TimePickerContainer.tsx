@@ -1,9 +1,24 @@
 import React from 'react';
 import TimePicker from './TimePicker';
 
+interface data {
+  location_name: string;
+  latitude: number;
+  longitude: number;
+  image_url: string;
+  explanation: string;
+  tag: string;
+  visit_time: string;
+}
+interface family {
+  parentId?: string;
+  child?: data;
+  time?: string;
+}
+
 interface TimePickerContainerProps {
   containers: string[];
-  family: any[];
+  family: family[];
   onTimeChange: (itemId: string, time: string) => void;
 }
 

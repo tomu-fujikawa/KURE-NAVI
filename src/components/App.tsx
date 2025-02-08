@@ -1,18 +1,18 @@
 "use client";
 
-import { DndContext, DragEndEvent, UniqueIdentifier } from '@dnd-kit/core';
+import { DndContext, DragEndEvent } from '@dnd-kit/core';
 import Droppable from './Droppable';
 import Draggable from './Draggable';
 import { useState,useEffect, useMemo } from 'react';
 import Papa from "papaparse";
 import { Button } from './ui/button';
-import TimePicker from './TimePicker';
 import TimePickerContainer from './TimePickerContainer';
-import { Plus, Minus, PlusCircle, Trash2, MinusCircle, Map } from 'lucide-react';
+import { Plus, Minus, PlusCircle, MinusCircle, Map } from 'lucide-react';
 import db from '../firebase';
 import { collection, getDocs, addDoc } from "firebase/firestore";  
 import { ChevronRight } from 'lucide-react'; // 矢印アイコンをインポート
 import React from 'react';
+import { useCallback } from 'react';
 
 
 interface data {
@@ -22,6 +22,7 @@ interface data {
   image_url: string;
   explanation: string;
   tag: string;
+  visit_time: string;
 }
 interface family {
   parentId?: string;
@@ -29,12 +30,44 @@ interface family {
   time?: string;
 }
 
-const AVAILABLE_TAGS = ['歴史', '自然', '建築', '庭園', '神社', '絶景', 'グルメ', '温泉'] as const;
+interface Choice{
+  location_name: string;
+  latitude: number;
+  longitude: number;
+  image_url: string;
+  explanation: string;
+  tag: string;
+}
+interface Course{
+  id: string;
+  title: string;
+  destinations: data[];
+  totalDistance: number;
+  totalTime: string;
+}
+
+interface Destination {
+  location_name: string;
+  latitude: number;
+  longitude: number;
+  image_url: string;
+  explanation: string;
+  tag?: string;
+  distance?: number; // 🔥 distance プロパティを追加
+}
+
+interface FamilyItem {
+  parentId: string;
+  child?: Destination;
+  time?: string;
+}
+
+const AVAILABLE_TAGS = ['歴史', '自然', '建築', '庭園', '神社', '絶景', 'グルメ', '温泉'];
 type Tag = typeof AVAILABLE_TAGS[number];
 
-export default function Page({label}:any) {
+export default function Page() {
     const [data, setData] = useState<data[]>([]);
-    const [choices, setChoices] = useState<any>();
+    const [choices, setChoices] = useState<Choice[]>([]);
     const [selectedTags, setSelectedTags] = useState<Tag[]>([]);
     const [family, setFamily] = useState<family[]>([]);
     const [containers, setContainers] = useState<string[]>(['A']);
@@ -45,7 +78,7 @@ export default function Page({label}:any) {
     const INITIAL_ROWS = 3;
     const ROW_INCREMENT = 3;
     const [visibleRows, setVisibleRows] = useState(INITIAL_ROWS);
-    const [sightseeingCourse, setSightseeingCourse] = useState<any[]>([]);
+    const [sightseeingCourse, setSightseeingCourse] = useState<Course[]>([]);
     const [tripTitle, setTripTitle] = useState("");
     const [maxTotalDistance, setMaxTotalDistance] = useState<number>(20); // フィルター用の最大合計距離（km）
     const [hoveredLocation, setHoveredLocation] = useState<string | null>(null); // ホバーした観光地のIDを保持
@@ -71,9 +104,9 @@ export default function Page({label}:any) {
       const fetchUsers = async () => {
         try {
           const querySnapshot = await getDocs(collection(db, "posts"));
-          const sightseeingData: any[] = [];
+          const sightseeingData: Course[] = [];
           querySnapshot.forEach((doc) => {
-            sightseeingData.push({ id: doc.id, ...doc.data() });
+            sightseeingData.push({ id: doc.id, ...doc.data() } as Course);
           });
           setSightseeingCourse(sightseeingData);
           console.log("sightseeingData",sightseeingData);
@@ -95,9 +128,8 @@ export default function Page({label}:any) {
       // 削除されるコンテナに関連するfamilyアイテムを元のchoicesに戻す
       const removedContainer = containers[containers.length - 1];
       const removedItems = family.filter(item => item.parentId === removedContainer);
-      
       setFamily(family.filter(item => item.parentId !== removedContainer));
-      setChoices((prevChoices: any) => [...prevChoices, ...removedItems.map((item: any) => item.child)]);
+      setChoices((prevChoices: Choice[]) => [...prevChoices, ...removedItems.map((item: family) => ({...item.child} as Choice))]);
       setContainers(newContainers);
     }
   }
@@ -111,7 +143,7 @@ export default function Page({label}:any) {
       )
     );
   };
-
+  
   const styles = {
     container: {
       padding: '2rem',
@@ -126,7 +158,7 @@ export default function Page({label}:any) {
       width: '100%',
       overflowX: 'auto',
       display: 'flex',
-      flexDirection: 'column' as const,
+      flexDirection: 'column',
       gap: '1rem',
     },
     timePickerAndDroppableWrapper: {
@@ -154,9 +186,9 @@ export default function Page({label}:any) {
     draggableItemInChoices: {
       padding: '0.5rem',
       width: '100%',
-      textAlign: 'center' as const,
+      textAlign: 'center',
       display: 'flex',
-      flexDirection: 'column' as const,
+      flexDirection: 'column',
       gap: '0.5rem',
       height: '200px', // カードの高さを固定
     },
@@ -173,7 +205,7 @@ export default function Page({label}:any) {
       color: 'white',
       overflow: 'hidden',
       textOverflow: 'ellipsis',
-      whiteSpace: 'nowrap' as const,
+      whiteSpace: 'nowrap',
       width: '100%',
       padding: '0 0.5rem',
     },
@@ -210,7 +242,7 @@ export default function Page({label}:any) {
     },
     mainContent: {
       display: 'flex',
-      flexDirection: 'column' as const,
+      flexDirection: 'column',
       alignItems: 'center',
       width: '100%',
       gap: '2rem',
@@ -232,9 +264,9 @@ export default function Page({label}:any) {
     draggableItem: {
       padding: '0.5rem',
       width: '100%',
-      textAlign: 'center' as const,
+      textAlign: 'center',
       display: 'flex',
-      flexDirection: 'column' as const,
+      flexDirection: 'column',
       gap: '0.5rem',
       height: '200px', // ✅ カード全体の高さ
       transition: 'transform 0.3s ease',
@@ -285,7 +317,7 @@ export default function Page({label}:any) {
       justifyContent: 'center',
     },
     distanceLabel: {
-      position: 'absolute' as 'absolute',
+      position: 'absolute',
       top: '0.5rem',
       right: '0.5rem',
       background: 'rgba(255, 255, 255, 0.95)',
@@ -293,7 +325,7 @@ export default function Page({label}:any) {
       borderRadius: '20px',
       fontSize: '0.8rem',
       color: 'var(--kure-blue)',
-      fontWeight: 'bold' as 'bold',
+      fontWeight: 'bold',
       boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)',
       border: '2px solid var(--kure-blue)',
       display: 'flex',
@@ -316,7 +348,7 @@ export default function Page({label}:any) {
       alignItems: 'center',
       justifyContent: 'flex-start',
       gap: '2rem',
-      flexWrap: 'wrap' as const,
+      flexWrap: 'wrap',
       paddingLeft: '1rem',
       fontSize: '1.5rem',
       fontWeight: 'bold',
@@ -327,7 +359,7 @@ export default function Page({label}:any) {
       alignItems: 'center',
       justifyContent: 'center',
       gap: '0.1rem',
-      flexWrap: 'wrap' as const,
+      flexWrap: 'wrap',
     },
     tagTitle:{
       fontSize: '2rem',
@@ -383,7 +415,7 @@ export default function Page({label}:any) {
       gap: '1rem',
     },
     searchContainer: {
-      position: 'relative' as const,
+      position: 'relative',
     },
     searchInput: {
       padding: '0.5rem 1rem',
@@ -396,7 +428,7 @@ export default function Page({label}:any) {
       width: '250px', // 幅を調整
     },
     searchIcon: {
-      position: 'absolute' as const,
+      position: 'absolute',
       left: '0.75rem',
       top: '50%',
       transform: 'translateY(-50%)',
@@ -413,9 +445,9 @@ export default function Page({label}:any) {
     sightseeing_card: {
       padding: "0.5rem",
       width: "200px",
-      textAlign: "center" as const,
+      textAlign: "center",
       display: "flex",
-      flexDirection: "column" as const,
+      flexDirection: "column",
       gap: "0.5rem",
       height: "200px",
       transition: "transform 0.3s ease",
@@ -460,7 +492,7 @@ export default function Page({label}:any) {
 const filteredChoices = useMemo(() => {
   if (!choices) return [];
   
-  return choices.filter((item: data) => {
+  return choices.filter((item: Choice) => {
     // タグフィルター
     const passesTagFilter = selectedTags.length === 0 || (
       item.tag && selectedTags.every(tag => item.tag.split(', ').includes(tag))
@@ -490,9 +522,8 @@ const filteredChoices = useMemo(() => {
   };
 
   // 🚀 各観光プランの合計距離を計算する関数
-  const calculateTotalDistance = (destinations: any[]): number => {
-    if (!destinations || destinations.length < 2) return 0; // 2地点未満なら距離は0
-  
+  const calculateTotalDistance = useCallback((destinations: data[]) => {
+    if (!destinations || destinations.length < 2) return 0;
     let totalDistance = 0;
     for (let i = 0; i < destinations.length - 1; i++) {
       totalDistance += calculateDistance(
@@ -502,23 +533,14 @@ const filteredChoices = useMemo(() => {
         destinations[i + 1].longitude
       );
     }
+    return totalDistance;
+  }, []);
   
-    return totalDistance; // 🔥 `string` ではなく `number` を返す
-  };
-
-
-const filteredSightseeingCourse = useMemo(() => {
-  if (!sightseeingCourse) return [];
-
-  return sightseeingCourse.filter((course: any) => {
-    const totalDistance = calculateTotalDistance(course.destinations); // 🔥 `number` 型になっている
-    return (
-      course.title.toLowerCase().includes(searchQueryCourse.toLowerCase()) &&
-      totalDistance <= maxTotalDistance // ✅ ここでエラーが出なくなる
-    );
-  });
-}, [sightseeingCourse, searchQueryCourse, maxTotalDistance]);
-
+  const filteredSightseeingCourse = useMemo(() => {
+    return sightseeingCourse.filter((course) => {
+      return calculateTotalDistance(course.destinations) <= maxTotalDistance;
+    });
+  }, [sightseeingCourse, maxTotalDistance, calculateTotalDistance]); // ✅ `calculateTotalDistance` が useCallback でメモ化された
 
 
 
@@ -629,12 +651,12 @@ const filteredSightseeingCourse = useMemo(() => {
       } : '登録なし');
       
       if (itemToRemove?.child) {
-        setChoices((prevChoices: any) => {
+        setChoices((prevChoices: Choice[]) => {
           const isDuplicate = prevChoices.some(
-            (choice: any) => choice.location_name === itemToRemove.child?.location_name
+            (choice: Choice) => choice.location_name === itemToRemove.child?.location_name
           );
           if (!isDuplicate) {
-            const updatedChoices = [...prevChoices, itemToRemove.child];
+            const updatedChoices = [...prevChoices, itemToRemove.child as Choice];
             console.log('=== 選択肢に戻す観光情報 ===');
             console.log('🔄 選択肢に戻す観光地:', itemToRemove.child?.location_name);
             return updatedChoices;
@@ -679,22 +701,9 @@ const filteredSightseeingCourse = useMemo(() => {
     });
   };
 
-
-
-  
-
-  // 指定した位置から近い順に観光情報をソートする関数
-  const sortByDistance = (targetLat: number, targetLon: number, items: any[]) => {
-    return [...items].sort((a, b) => {
-      const distanceA = calculateDistance(targetLat, targetLon, a.latitude, a.longitude);
-      const distanceB = calculateDistance(targetLat, targetLon, b.latitude, b.longitude);
-      return distanceA - distanceB;
-    });
-  };
-
   // 距離表示用のコンポーネントを改善
   const DistanceLabel = ({ distance }: { distance: number }) => (
-    <div style={styles.distanceLabel}>
+    <div style={styles.distanceLabel as React.CSSProperties}>
       <svg 
         style={styles.distanceIcon} 
         viewBox="0 0 24 24" 
@@ -707,37 +716,15 @@ const filteredSightseeingCourse = useMemo(() => {
         : `${distance.toFixed(1)}km`
       }
     </div>
-  );
+  )
 
-  // ドラッグ可能なアイテムをクリックした時のハンドラーを追加
-  const handleItemClick = (item: any) => {
-    if (!item || !item.child) return;
-
-    const targetLat = item.child.latitude;
-    const targetLon = item.child.longitude;
-    
-    // 未登録の観光情報を距離でソート
-    const sortedChoices = sortByDistance(targetLat, targetLon, choices);
-    setChoices(sortedChoices);
-    
-    console.log('=== クリックした観光地からの距離順にソート ===');
-    console.log('📍 基準位置:', {
-      観光地名: item.child.location_name,
-      緯度: targetLat,
-      経度: targetLon
-    });
-    console.log('📊 ソート結果:', sortedChoices.map(choice => ({
-      観光地名: choice.location_name,
-      距離: calculateDistance(targetLat, targetLon, choice.latitude, choice.longitude).toFixed(2) + 'km'
-    })));
-  };
 
   const TagFilter = () => {
     const styles = {
       container: {
         display: 'flex',
         gap: '0.5rem',
-        flexWrap: 'wrap' as const,
+        flexWrap: 'wrap',
         justifyContent: 'center',
       },
       tag: {
@@ -758,7 +745,7 @@ const filteredSightseeingCourse = useMemo(() => {
     };
 
     return (
-      <div style={styles.container}>
+      <div style={styles.container as React.CSSProperties}>
         {AVAILABLE_TAGS.map((tag) => (
           <button
             key={tag}
@@ -834,7 +821,7 @@ const filteredSightseeingCourse = useMemo(() => {
     }
   };
 
-  const handleItemHover = (item: any) => {
+  const handleItemHover = (item: data) => {
     setHoveredLocation(item.location_name); // ホバーした観光地のIDを設定
   };
 
@@ -842,7 +829,7 @@ const filteredSightseeingCourse = useMemo(() => {
     setHoveredLocation(null); // ホバーを外したときにIDをリセット
   };
 
-  const handleEveryoneItemHover = (item: any, travel: any) => {
+  const handleEveryoneItemHover = (item: data, travel: Course) => {
     setEveryoneHoveredLocation(item.location_name); // ホバーした観光地のIDを設定
     setEveryoneHoveredTitle(travel.title);
   };
@@ -901,7 +888,7 @@ const filteredSightseeingCourse = useMemo(() => {
  
 
         <DndContext onDragEnd={handleDragEnd}>
-          <div style={styles.mainContent}>
+          <div style={styles.mainContent as React.CSSProperties}>
             <div style={styles.scrollContainer as React.CSSProperties}>
               <div style={styles.timePickerAndDroppableWrapper}>
                 {containers.map((id, index) => (
@@ -943,10 +930,10 @@ const filteredSightseeingCourse = useMemo(() => {
                                 <div style={styles.draggableContent}>
                                   <Draggable key={foundItem.child?.location_name} id={foundItem.child?.location_name || ''} hoverItem={hoveredLocation || undefined} cardTitle={foundItem.child?.location_name || ''}>
                                     <div 
-                                      style={styles.draggableItem} 
+                                      style={styles.draggableItem as React.CSSProperties} 
                                       className="draggable-item"
                                       onMouseEnter={() => {
-                                        handleItemHover(foundItem); // 既存のホバー処理
+                                        handleItemHover(foundItem.child as data); // 既存のホバー処理
                                         setHoveredDraggableLocation(foundItem.child?.location_name || null); // 新しいホバー処理
                                       }}
                                       onMouseLeave={() => {
@@ -985,8 +972,8 @@ const filteredSightseeingCourse = useMemo(() => {
                                       ) : (
                                         <>
                                           <img 
-                                            src={foundItem.child?.image_url} 
-                                            alt={foundItem.child?.location_name}
+                                            src={foundItem.child?.image_url || ''} 
+                                            alt={foundItem.child?.location_name || ''}
                                             style={styles.cardImage as React.CSSProperties}
                                           />
                                           <div style={{...styles.cardTitle, marginTop:"10px"}}>
@@ -1023,7 +1010,7 @@ const filteredSightseeingCourse = useMemo(() => {
             </div>
             <div>
             <div style={styles.tagContainer as React.CSSProperties}>
-                <div style={styles.tagTitleContainer}>
+                <div style={styles.tagTitleContainer as React.CSSProperties}>
                 <div style={styles.tagTitle}>観光地リスト</div>
                 <div style={styles.underline}></div>
                 </div>
@@ -1033,7 +1020,7 @@ const filteredSightseeingCourse = useMemo(() => {
         <TagFilter />
         
         {/* 検索欄 */}
-        <div style={styles.searchContainer}>
+        <div style={styles.searchContainer as React.CSSProperties}>
           <input
             type="text"
             placeholder="観光地を検索..."
@@ -1042,7 +1029,7 @@ const filteredSightseeingCourse = useMemo(() => {
             style={styles.searchInput}
           />
           <svg
-            style={styles.searchIcon}
+            style={styles.searchIcon as React.CSSProperties}
             xmlns="http://www.w3.org/2000/svg"
             viewBox="0 0 24 24"
             fill="none"
@@ -1059,7 +1046,7 @@ const filteredSightseeingCourse = useMemo(() => {
               </div>
               <div style={styles.choicesContainer}>
               {filteredChoices && filteredChoices
-                .map((item: any) => {
+                .map((item: Choice) => {
                   const referencePoint = family.length > 0 
                     ? family[family.length - 1].child 
                     : null;
@@ -1078,14 +1065,14 @@ const filteredSightseeingCourse = useMemo(() => {
                     distance
                   };
                 })
-                .sort((a: any, b: any) => a.distance - b.distance)
+                .sort((a: Destination, b: Destination) => (a.distance ?? 0) - (b.distance ?? 0))
                 // 表示数を制限
                 .slice(0, CARDS_PER_ROW * visibleRows)
-                .map((item: any) => (
+                .map((item: Destination) => (
                   <Draggable key={item.location_name} id={item.location_name} hoverItem={hoveredLocation || undefined} cardTitle={item.location_name}>
                     <div 
                       style={{
-                        ...styles.draggableItem,
+                        ...styles.draggableItem as React.CSSProperties,
                         position: 'relative',
                         cursor: 'grab',
                         transform: hoveredLocation === item.location_name ? 'scale(1.5)' : 'scale(1)', // ホバー時に拡大
@@ -1093,13 +1080,13 @@ const filteredSightseeingCourse = useMemo(() => {
                         zIndex: hoveredLocation === item.location_name ? 1000 : 1,
                       }} 
                       className="draggable-item"
-                      onMouseEnter={() => handleItemHover(item)} // ホバー時の処理
+                      onMouseEnter={() => handleItemHover(item as data)} // ホバー時の処理
                       onMouseLeave={handleItemLeave} // ホバーを外したときの処理
                     >
                       <img 
-                        src={item.image_url} 
-                        alt={item.location_name}
-                        style={{...styles.cardImage as React.CSSProperties, height: hoveredLocation === item.location_name ? "45%" : "50%"}}
+                        src={item.image_url || ''} 
+                        alt={item.location_name || ''}
+                        style={{...styles.cardImage as React.CSSProperties,height: hoveredLocation === item.location_name ? "45%" : "50%"}}
                       />
                       {hoveredLocation === item.location_name ? ( // ホバー中の観光地の説明を表示
                       <div style={{display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center", gap:"4px"}}>                                                                               
@@ -1173,7 +1160,7 @@ const filteredSightseeingCourse = useMemo(() => {
                         </div>
                       )}
                       {item.distance !== Infinity && (
-                        <DistanceLabel distance={item.distance} />
+                        <DistanceLabel distance={item.distance ?? 0} />
                       )}
                     </div>
                   </Draggable>
@@ -1210,12 +1197,12 @@ const filteredSightseeingCourse = useMemo(() => {
 
         <div style={{ display: "flex", flexDirection: "column", marginTop: "108px" }}>
   <div style={styles.tagContainer as React.CSSProperties}>
-    <div style={{ ...styles.tagTitleContainer, paddingLeft: "6px" }}>
+    <div style={{ ...styles.tagTitleContainer as React.CSSProperties, paddingLeft: "6px" }}>
       <div style={styles.tagTitle}>あなたの観光</div>
       <div style={styles.underline}></div>
     </div>
             {/* 検索欄 */}
-            <div style={styles.searchContainer}>
+            <div style={styles.searchContainer as React.CSSProperties}>
           <input
             type="text"
             placeholder="タイトルを検索"
@@ -1224,7 +1211,7 @@ const filteredSightseeingCourse = useMemo(() => {
             style={styles.searchInput}
           />
           <svg
-            style={styles.searchIcon}
+            style={styles.searchIcon as React.CSSProperties}
             xmlns="http://www.w3.org/2000/svg"
             viewBox="0 0 24 24"
             fill="none"
@@ -1259,7 +1246,7 @@ const filteredSightseeingCourse = useMemo(() => {
 
   {/* 各観光プランを縦に並べる */}
   <div style={{ display: "flex", flexDirection: "column", gap: "20px", marginTop:"20px",marginLeft:"24px" }}>
-  {filteredSightseeingCourse.map((course: any, courseIndex: number) => {
+  {filteredSightseeingCourse.map((course: Course, courseIndex: number) => {
   const totalDistance = calculateTotalDistance(course.destinations); // 距離を計算
   const totalDistanceText = `${totalDistance.toFixed(1)} km`; // 🔥 km を追加
 
@@ -1287,10 +1274,10 @@ const filteredSightseeingCourse = useMemo(() => {
       {/* border: "3px solid var(--kure-blue)",
       borderRadius: "25px",
       padding: "12px 0 12px 12px", */}
-        {course.destinations.map((destination: any, index: number) => (
+        {course.destinations.map((destination: data, index: number) => (
           <div key={"sightseeing" + courseIndex + index} style={{ display: "flex", flexDirection: "row", alignItems: "center", gap: "10px" }}>
             {/* 観光スポットカード */}
-            <div style={{ ...styles.sightseeing_card, flex: "0 0 auto",
+            <div style={{ ...styles.sightseeing_card as React.CSSProperties, flex: "0 0 auto",
               cursor: 'grab',
               transition: 'transform 0.4s ease',
               position: 'relative', // 相対位置を設定
@@ -1377,8 +1364,8 @@ const filteredSightseeingCourse = useMemo(() => {
              ) : (
               <div style={{width:"100%", height:"100%"}}>
                 <img
-                src={destination?.image_url}
-                alt={destination.title}
+                src={destination?.image_url || ''}
+                alt={destination.location_name || ''}
                 style={styles.sightseeing_cardImage as React.CSSProperties}
               />
               <div style={{...styles.sightseeing_cardTitle, 
@@ -1416,12 +1403,12 @@ const filteredSightseeingCourse = useMemo(() => {
 
         <div style={{ display: "flex", flexDirection: "column", marginTop: "108px" }}>
   <div style={styles.tagContainer as React.CSSProperties}>
-    <div style={{ ...styles.tagTitleContainer, paddingLeft: "6px" }}>
+    <div style={{ ...styles.tagTitleContainer as React.CSSProperties, paddingLeft: "6px" }}>
       <div style={styles.tagTitle}>みんなの観光</div>
       <div style={styles.underline}></div>
     </div>
             {/* 検索欄 */}
-            <div style={styles.searchContainer}>
+            <div style={styles.searchContainer as React.CSSProperties}>
           <input
             type="text"
             placeholder="タイトルを検索"
@@ -1430,7 +1417,7 @@ const filteredSightseeingCourse = useMemo(() => {
             style={styles.searchInput}
           />
           <svg
-            style={styles.searchIcon}
+            style={styles.searchIcon as React.CSSProperties}
             xmlns="http://www.w3.org/2000/svg"
             viewBox="0 0 24 24"
             fill="none"
@@ -1465,7 +1452,7 @@ const filteredSightseeingCourse = useMemo(() => {
 
   {/* 各観光プランを縦に並べる */}
   <div style={{ display: "flex", flexDirection: "column", gap: "20px", marginTop:"20px",marginLeft:"24px" }}>
-  {filteredSightseeingCourse.map((course: any, courseIndex: number) => {
+  {filteredSightseeingCourse.map((course: Course, courseIndex: number) => {
   const totalDistance = calculateTotalDistance(course.destinations); // 距離を計算
   const totalDistanceText = `${totalDistance.toFixed(1)} km`; // 🔥 km を追加
 
@@ -1493,10 +1480,10 @@ const filteredSightseeingCourse = useMemo(() => {
       {/* border: "3px solid var(--kure-blue)",
       borderRadius: "25px",
       padding: "12px 0 12px 12px", */}
-        {course.destinations.map((destination: any, index: number) => (
+        {course.destinations.map((destination: data, index: number) => (
           <div key={"sightseeing" + courseIndex + index} style={{ display: "flex", flexDirection: "row", alignItems: "center", gap: "10px" }}>
             {/* 観光スポットカード */}
-            <div style={{ ...styles.sightseeing_card, flex: "0 0 auto",
+            <div style={{ ...styles.sightseeing_card as React.CSSProperties, flex: "0 0 auto",
               cursor: 'grab',
               transition: 'transform 0.4s ease',
               position: 'relative', // 相対位置を設定
@@ -1583,8 +1570,8 @@ const filteredSightseeingCourse = useMemo(() => {
              ) : (
               <div style={{width:"100%", height:"100%"}}>
                 <img
-                src={destination?.image_url}
-                alt={destination.title}
+                src={destination?.image_url || ''}
+                alt={destination.location_name || ''}
                 style={styles.sightseeing_cardImage as React.CSSProperties}
               />
               <div style={{...styles.sightseeing_cardTitle, 
@@ -1641,32 +1628,32 @@ const filteredSightseeingCourse = useMemo(() => {
     
     if (family.length === 0) {
       if (over) {
-        setFamily((prevItems: any) => [
-          ...prevItems, 
+        setFamily((prevItems: family[]) => [
+          ...prevItems,
           {
-            parentId: over.id,
-            child: data.find((value:any) => value.location_name === active.id)
+            parentId: over.id.toString(), // Convert to string to match family type
+            child: data.find((value: data) => value.location_name === active.id)
           }
-        ]); 
-        setChoices((prevItems: any) => 
-          prevItems.filter((value:any) => value.location_name !== active.id)
+        ]);
+        setChoices((prevItems: Choice[]) => 
+          prevItems.filter((value: Choice) => value.location_name !== active.id)
         );
       }
     } else {
       if (family.find(item => item?.child?.location_name === active.id)) {
         if (!over) {
           // ドラッグ要素を選択肢に戻す処理
-          setFamily((prevItems: any) => {
+          setFamily((prevItems: family[]) => {
             // 削除される要素の情報を取得
             const itemToRemove = prevItems.find(
-              (item:any) => item.child.location_name === active.id
+              (item: family) => item.child?.location_name === active.id
             );
             
             if (!itemToRemove) return prevItems;
             
-            const removedIndex = containers.indexOf(itemToRemove.parentId);
+            const removedIndex = containers.indexOf(itemToRemove.parentId as string);
             const remainingItems = prevItems.filter(
-              (item:any) => item.child.location_name !== active.id
+              (item: family) => item.child?.location_name !== active.id
             );
             
             // A1の要素が削除された場合は、残りの要素のインデックスを更新
@@ -1676,12 +1663,12 @@ const filteredSightseeingCourse = useMemo(() => {
             
             // それ以外の要素が削除された場合は、インデックスを振り直す
             const reindexedItems = remainingItems
-              .sort((a:any, b:any) => {
-                const aIndex = containers.indexOf(a.parentId);
-                const bIndex = containers.indexOf(b.parentId);
+              .sort((a:family, b:family) => {
+                const aIndex = containers.indexOf(a.parentId as string);
+                const bIndex = containers.indexOf(b.parentId as string);
                 return aIndex - bIndex;
               })
-              .map((item:any, index:any) => ({
+              .map((item: family, index: number) => ({
                 ...item,
                 parentId: containers[index]
               }));
@@ -1689,10 +1676,10 @@ const filteredSightseeingCourse = useMemo(() => {
             return reindexedItems;
           });
           
-          setChoices((prevItems: any) => [
-            ...prevItems, 
-            data.find((value:any) => value.location_name === active.id)
-          ]); 
+          setChoices((prevItems: Choice[]) => {
+            const foundItem = data.find((value: data) => value.location_name === active.id);
+            return foundItem ? [...prevItems, foundItem] : prevItems;
+          });
           
           // コンテナの更新（A1は削除しない）
           setContainers(prev => {
@@ -1709,23 +1696,23 @@ const filteredSightseeingCourse = useMemo(() => {
           });
         } else if (family.find(item => item?.parentId === over?.id) === undefined) {
           // 別のドロップ先に移動する場合
-          setFamily((prevItems: any) => 
-            prevItems.map((item:any) => 
-              item.child.location_name === active.id 
-                ? {...item, parentId: over?.id} 
+          setFamily((prevItems: family[]) => 
+            prevItems.map((item: family) => 
+              item.child?.location_name === active.id 
+                ? {...item, parentId: over?.id as string} 
                 : item
             )
           );
         } else {
           // 要素を入れ替える場合
-          setFamily((prevItems: any) => {
-            const afterStock = prevItems.find((obj:any) => obj.parentId === over?.id);
-            const beforeStock = prevItems.find((obj:any) => 
-              obj.child.location_name === active.id
+          setFamily((prevItems: family[]) => {
+            const afterStock = prevItems.find((obj: family) => obj.parentId === over?.id);
+            const beforeStock = prevItems.find((obj: family) => 
+              obj.child?.location_name === active.id
             );
             
             if (afterStock && beforeStock) {
-              return prevItems.map((obj:any) => 
+              return prevItems.map((obj: family) => 
                 obj.parentId === afterStock.parentId 
                   ? {...obj, child: beforeStock.child}
                   : obj.parentId === beforeStock.parentId 
@@ -1738,15 +1725,15 @@ const filteredSightseeingCourse = useMemo(() => {
         }
       } else {
         if (over && family.find(familyItem => familyItem.parentId === over.id) === undefined) {
-          setFamily((prevItems: any) => [
+          setFamily((prevItems: family[]) => [
             ...prevItems, 
             {
-              parentId: over?.id,
-              child: data.find((value:any) => value.location_name === active.id)
+              parentId: over?.id as string,
+              child: data.find((value: data) => value.location_name === active.id)
             }
           ]);
-          setChoices((prevItems: any) => 
-            prevItems.filter((value:any) => value.location_name !== active.id)
+          setChoices((prevItems: Choice[]) => 
+            prevItems.filter((value: Choice) => value.location_name !== active.id)
           );
         }
       }
