@@ -1222,6 +1222,16 @@ const filteredSightseeingCourse = useMemo(() => {
         }}
       >
         {course.destinations.map((destination: any, index: number) => (
+          <div style={{display:"flex", flexDirection:"column", alignItems:"center", gap:"10px"}}>
+                                  {destination.visit_time ? ( // visit_timeが存在する場合のみ表示
+                        <p style={{ fontSize: '0.875rem', color: 'black' }}>
+                          到着時刻: {destination.visit_time}
+                        </p>
+                      ):(
+                        <p style={{ fontSize: '0.875rem', color:"transparent" }}>
+                          到着時刻: {destination.visit_time}
+                        </p>
+                      )}
           <div key={"sightseeing" + courseIndex + index} style={{ display: "flex", flexDirection: "row", alignItems: "center", gap: "10px" }}>
             {/* 観光スポットカード */}
             <div style={{ ...styles.sightseeing_card, flex: "0 0 auto",
@@ -1285,6 +1295,8 @@ const filteredSightseeingCourse = useMemo(() => {
               <ChevronRight size={24} color="var(--kure-blue)" />
             )}
           </div>
+          </div>
+
         ))}
       </div>
     </div>
