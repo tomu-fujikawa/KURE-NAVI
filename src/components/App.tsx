@@ -47,10 +47,11 @@ export default function Page({label}:any) {
     const [sightseeingCourse, setSightseeingCourse] = useState<any[]>([]);
     const [tripTitle, setTripTitle] = useState("");
     const [maxTotalDistance, setMaxTotalDistance] = useState<number>(20); // フィルター用の最大合計距離（km）
+    const [hoveredLocation, setHoveredLocation] = useState<string | null>(null); // ホバーした観光地のIDを保持
 
     
     useEffect(() => {
-      fetch("/locations2.csv")
+      fetch("/locations3.csv")
           .then((response) => response.text())
           .then((csvText) => {
               const parsedData = Papa.parse<data>(csvText, {
@@ -163,8 +164,9 @@ export default function Page({label}:any) {
       borderRadius: '0.25rem',
     },
     cardTitle: {
-      fontSize: '0.875rem',
-      fontWeight: '500',
+      // fontSize: '0.875rem',
+      fontSize: "1rem",
+      fontWeight: '700',
       color: 'white',
       overflow: 'hidden',
       textOverflow: 'ellipsis',
@@ -816,6 +818,14 @@ const filteredSightseeingCourse = useMemo(() => {
     }
   };
 
+  const handleItemHover = (item: any) => {
+    setHoveredLocation(item.location_name); // ホバーした観光地のIDを設定
+  };
+
+  const handleItemLeave = () => {
+    setHoveredLocation(null); // ホバーを外したときにIDをリセット
+  };
+
   return (
     <div style={styles.container}>
       <div style={styles.card} className="container-card">
@@ -918,7 +928,7 @@ const filteredSightseeingCourse = useMemo(() => {
                                       alt={foundItem.child?.location_name}
                                       style={styles.cardImage as React.CSSProperties}
                                     />
-                                    <div style={styles.cardTitle}>
+                                    <div style={{...styles.cardTitle, marginTop:"10px"}}>
                                       {foundItem.child?.location_name}
                                     </div>
                                   </div>
@@ -1004,15 +1014,31 @@ const filteredSightseeingCourse = useMemo(() => {
                         ...styles.draggableItem,
                         position: 'relative',
                         cursor: 'grab',
+                        transform: hoveredLocation === item.location_name ? 'scale(1.5)' : 'scale(1)', // ホバー時に拡大
+                        transition: 'transform 0.4s ease',
+                        zIndex: hoveredLocation === item.location_name ? 1000 : 1,
                       }} 
                       className="draggable-item"
+                      onMouseEnter={() => handleItemHover(item)} // ホバー時の処理
+                      onMouseLeave={handleItemLeave} // ホバーを外したときの処理
                     >
                       <img 
                         src={item.image_url} 
                         alt={item.location_name}
-                        style={styles.cardImage as React.CSSProperties}
+                        style={{...styles.cardImage as React.CSSProperties, height: hoveredLocation === item.location_name ? "45%" : "50%"}}
                       />
-                      <div style={styles.cardTitle} title={item.location_name}>
+                      {hoveredLocation === item.location_name ? ( // ホバー中の観光地の説明を表示
+                      <div style={{display:"flex", flexDirection:"column", alignItems:"flex-start", justifyContent:"center", gap:"4px"}}>
+                          <div style={{...styles.cardTitle}} title={item.location_name}>
+                        {item.location_name}
+                      </div>  
+                      <div style={{ fontSize: '9px', color: 'white', textAlign: 'left' }}>
+                          {item.explanation}
+                        </div>                      
+                      </div>
+                      ):(
+                        <div>
+                          <div style={{...styles.cardTitle, marginTop:"10px", marginBottom:"2px"}} title={item.location_name}>
                         {item.location_name}
                       </div>
                       <div style={{
@@ -1037,7 +1063,9 @@ const filteredSightseeingCourse = useMemo(() => {
                             {tag}
                           </span>
                         ))}
-                      </div>
+                        </div>
+                        </div>
+                      )}
                       {item.distance !== Infinity && (
                         <DistanceLabel distance={item.distance} />
                       )}
