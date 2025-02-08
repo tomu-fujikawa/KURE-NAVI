@@ -1219,6 +1219,9 @@ const filteredSightseeingCourse = useMemo(() => {
           paddingBottom: "10px",
           maxWidth: "100%",
           alignItems: "center",
+          border: "3px solid var(--kure-blue)",
+          borderRadius: "25px",
+          padding: "12px 0 12px 12px",
         }}
       >
         {course.destinations.map((destination: any, index: number) => (
