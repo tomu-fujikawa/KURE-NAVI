@@ -48,7 +48,8 @@ export default function Page({label}:any) {
     const [tripTitle, setTripTitle] = useState("");
     const [maxTotalDistance, setMaxTotalDistance] = useState<number>(20); // フィルター用の最大合計距離（km）
     const [hoveredLocation, setHoveredLocation] = useState<string | null>(null); // ホバーした観光地のIDを保持
-
+    const [everyonHoveredLocation, setEveryoneHoveredLocation] = useState<string | null>(null); // ホバーした観光地のIDを保持
+    const [everyoneHoveredTitle, setEveryoneHoveredTitle] = useState<string | null>(null); // ホバーした観光地のIDを保持
     
     useEffect(() => {
       fetch("/locations3.csv")
@@ -826,6 +827,15 @@ const filteredSightseeingCourse = useMemo(() => {
     setHoveredLocation(null); // ホバーを外したときにIDをリセット
   };
 
+  const handleEveryoneItemHover = (item: any, travel: any) => {
+    setEveryoneHoveredLocation(item.location_name); // ホバーした観光地のIDを設定
+    setEveryoneHoveredTitle(travel.title);
+  };
+
+  const handleEveryoneItemLeave = () => {
+    setEveryoneHoveredLocation(null); // ホバーを外したときにIDをリセット
+  };
+
   return (
     <div style={styles.container}>
       <div style={styles.card} className="container-card">
@@ -917,7 +927,7 @@ const filteredSightseeingCourse = useMemo(() => {
                             const foundItem = family.find((item) => item.parentId === id);
                             return foundItem ? (
                               <div style={styles.draggableContent}>
-                                <Draggable key={foundItem.child?.location_name} id={foundItem.child?.location_name || ''}>
+                                <Draggable key={foundItem.child?.location_name} id={foundItem.child?.location_name || ''} hoverItem={hoveredLocation || undefined} cardTitle={foundItem.child?.location_name || ''}>
                                   <div 
                                     style={styles.draggableItem} 
                                     className="draggable-item"
@@ -1008,7 +1018,7 @@ const filteredSightseeingCourse = useMemo(() => {
                 // 表示数を制限
                 .slice(0, CARDS_PER_ROW * visibleRows)
                 .map((item: any) => (
-                  <Draggable key={item.location_name} id={item.location_name}>
+                  <Draggable key={item.location_name} id={item.location_name} hoverItem={hoveredLocation || undefined} cardTitle={item.location_name}>
                     <div 
                       style={{
                         ...styles.draggableItem,
@@ -1180,13 +1190,40 @@ const filteredSightseeingCourse = useMemo(() => {
         {course.destinations.map((destination: any, index: number) => (
           <div key={"sightseeing" + courseIndex + index} style={{ display: "flex", flexDirection: "row", alignItems: "center", gap: "10px" }}>
             {/* 観光スポットカード */}
-            <div style={{ ...styles.sightseeing_card, flex: "0 0 auto" }}>
-              <img
+            <div style={{ ...styles.sightseeing_card, flex: "0 0 auto",
+              cursor: 'grab',
+              transition: 'transform 0.4s ease',
+             }}
+             onMouseEnter={() => handleEveryoneItemHover(destination,course)} // ホバー時の処理
+             onMouseLeave={handleEveryoneItemLeave} // ホバーを外したときの処理
+             > 
+             {everyonHoveredLocation == destination.location_name && everyoneHoveredTitle == course.title ? (
+              <div style={{ textAlign: 'left' }}>
+                <h3 style={{ fontSize: '1.5rem', fontWeight: 'bold', color: 'var(--kure-blue)' }}>
+                  {destination.location_name}
+                </h3>
+                <p style={{ 
+                  fontSize: '0.875rem', 
+                  color: 'gray', 
+                  overflowWrap: 'break-word',
+                  wordBreak: 'break-word',
+                  whiteSpace: 'pre-wrap', // 改行と折り返しを許可
+                  maxWidth: '100%' // 親要素の幅を超えないようにする
+                }}>
+                  {destination.explanation}                   
+                </p>
+              </div>
+             ) : (
+              <div style={{width:"100%", height:"100%"}}>
+                <img
                 src={destination?.image_url}
                 alt={destination.title}
                 style={styles.sightseeing_cardImage as React.CSSProperties}
               />
               <div style={styles.sightseeing_cardTitle}>{destination?.location_name}</div>
+              </div>
+             )}
+
             </div>
 
             {/* 矢印アイコン (最後の要素の後には入れない) */}
