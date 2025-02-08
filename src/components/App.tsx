@@ -109,7 +109,6 @@ export default function Page() {
             sightseeingData.push({ id: doc.id, ...doc.data() } as Course);
           });
           setSightseeingCourse(sightseeingData);
-          console.log("sightseeingData",sightseeingData);
         } catch (error) {
           console.error("Error fetching sightseeing:", error);
         }
@@ -553,17 +552,6 @@ const filteredChoices = useMemo(() => {
 
   const addPlanAfter = (currentId: string) => {
     const currentIndex = containers.indexOf(currentId);
-    
-    console.group('プラン追加処理の詳細');
-    console.log('=== 追加前の状態 ===');
-    console.log('🎯 ドラッグ先要素一覧:', containers);
-    console.log('📍 登録済み観光情報:', family.map(item => ({
-      ドラッグ先ID: item.parentId,
-      観光地名: item.child?.location_name,
-      時間: item.time
-    })));
-    console.log('➕ 追加位置のドラッグ先ID:', currentId);
-
     // コンテナの更新
     setContainers(prev => {
       const newContainers = [...prev];
@@ -571,9 +559,6 @@ const filteredChoices = useMemo(() => {
       newContainers.splice(currentIndex + 1, 0, generateAlphabetId(currentIndex + 1));
       // それ以降のIDを更新
       const updatedContainers = newContainers.map((_, index) => generateAlphabetId(index));
-      
-      console.log('=== ドラッグ先要素の更新 ===');
-      console.log('🎯 更新後のドラッグ先要素一覧:', updatedContainers);
       return updatedContainers;
     });
 
@@ -593,39 +578,12 @@ const filteredChoices = useMemo(() => {
         }
         return item;
       });
-
-      console.log('=== 登録済み観光情報の更新 ===');
-      console.log('📍 更新後の観光情報:', updatedItems.map(item => ({
-        ドラッグ先ID: item.parentId,
-        観光地名: item.child?.location_name,
-        時間: item.time
-      })));
-
-      console.log('=== 最終的な更新結果 ===');
-      console.log('🎯 最終的なドラッグ先要素:', containers.map((_, i) => generateAlphabetId(i)));
-      console.log('📍 最終的な登録済み観光情報:', updatedItems.map(item => ({
-        ドラッグ先ID: item.parentId,
-        観光地名: item.child?.location_name,
-        時間: item.time
-      })));
-      console.groupEnd();
       return updatedItems;
     });
   };
 
   const removePlan = (containerId: string) => {
     if (containers.length <= 1) return;
-
-    console.group('プラン削除処理の詳細');
-    console.log('=== 削除前の状態 ===');
-    console.log('🎯 ドラッグ先要素一覧:', containers);
-    console.log('📍 登録済み観光情報:', family.map(item => ({
-      ドラッグ先ID: item.parentId,
-      観光地名: item.child?.location_name,
-      時間: item.time
-    })));
-    console.log('🗑️ 削除対象のドラッグ先ID:', containerId);
-
     const removeIndex = containers.indexOf(containerId);
 
     // コンテナの更新
@@ -635,21 +593,12 @@ const filteredChoices = useMemo(() => {
       const newContainers = prev
         .filter(id => id !== containerId)
         .map((_, index) => generateAlphabetId(index));
-      
-      console.log('=== ドラッグ先要素の更新 ===');
-      console.log('🎯 更新後のドラッグ先要素一覧:', newContainers);
       return newContainers;
     });
 
     // family配列の更新
     setFamily(prev => {
       const itemToRemove = prev.find(item => item.parentId === containerId);
-      console.log('=== 削除される観光情報 ===');
-      console.log('📍 削除対象:', itemToRemove ? {
-        ドラッグ先ID: itemToRemove.parentId,
-        観光地名: itemToRemove.child?.location_name,
-        時間: itemToRemove.time
-      } : '登録なし');
       
       if (itemToRemove?.child) {
         setChoices((prevChoices: Choice[]) => {
@@ -658,8 +607,6 @@ const filteredChoices = useMemo(() => {
           );
           if (!isDuplicate) {
             const updatedChoices = [...prevChoices, itemToRemove.child as Choice];
-            console.log('=== 選択肢に戻す観光情報 ===');
-            console.log('🔄 選択肢に戻す観光地:', itemToRemove.child?.location_name);
             return updatedChoices;
           }
           return prevChoices;
@@ -682,22 +629,6 @@ const filteredChoices = useMemo(() => {
           parentId: generateAlphabetId(newIndex)
         };
       });
-
-      console.log('=== 残りの登録済み観光情報 ===');
-      console.log('📍 更新後の観光情報:', updatedItems.map(item => ({
-        ドラッグ先ID: item.parentId,
-        観光地名: item.child?.location_name,
-        時間: item.time
-      })));
-
-      console.log('=== 最終的な更新結果 ===');
-      console.log('🎯 最終的なドラッグ先要素:', containers.filter(id => id !== containerId).map((_, i) => generateAlphabetId(i)));
-      console.log('📍 最終的な登録済み観光情報:', updatedItems.map(item => ({
-        ドラッグ先ID: item.parentId,
-        観光地名: item.child?.location_name,
-        時間: item.time
-      })));
-      console.groupEnd();
       return updatedItems;
     });
   };
@@ -768,11 +699,6 @@ const filteredChoices = useMemo(() => {
       </div>
     );
   };
-  useEffect(() => {
-    console.log("🚀 選択されたタグ:", selectedTags);
-    console.log("🎯 フィルター適用前のデータ:", choices);
-    console.log("✅ フィルター適用後のデータ:", filteredChoices);
-  }, [filteredChoices, choices, selectedTags]);
 
   // ボタンのクリックハンドラー
   const handleShowMore = () => {
@@ -809,7 +735,6 @@ const filteredChoices = useMemo(() => {
     try {
       // Firebase Firestore にデータを追加
       const docRef = await addDoc(collection(db, "posts"), registrationData);
-      console.log("登録成功！ ドキュメントID:", docRef.id);
       alert("プランが登録されました！");
   
       // // 成功後にフォームをリセット
@@ -858,7 +783,7 @@ const filteredChoices = useMemo(() => {
                     {/* 🔍 タイトル入力欄 */}
             <input
               type="text"
-              placeholder="旅のタイトルを入力"
+              placeholder="探検のタイトルを入力"
               value={tripTitle}
               onChange={(e) => setTripTitle(e.target.value)}
               style={{
@@ -873,11 +798,11 @@ const filteredChoices = useMemo(() => {
             <div style={styles.buttonContainer}>
               <Button onClick={addPlan} style={styles.addButton}>
                 <Plus style={{ width: '1.25rem', height: '1.25rem' }} />
-                プランを追加
+                探検先を追加
               </Button>
               <Button onClick={deletePlan} style={styles.deleteButton}>
                 <Minus style={{ width: '1.25rem', height: '1.25rem' }} />
-                プランを削除
+                探検先を削除
               </Button>
             </div>
           </div>
@@ -892,7 +817,7 @@ const filteredChoices = useMemo(() => {
               height: "100px",
             }}
           >
-            プランを登録
+            探検を登録
           </Button>
         </div>
         </div>
@@ -914,7 +839,7 @@ const filteredChoices = useMemo(() => {
                             <button
                               style={styles.controlButton}
                               onClick={() => addPlanAfter(id)}
-                              title="このプランの後に追加"
+                              title="この探検の後に追加"
                             >
                               <div style={styles.buttonIcon}>
                                 <PlusCircle size={16} color="var(--kure-blue)" />
@@ -924,7 +849,7 @@ const filteredChoices = useMemo(() => {
                               <button
                                 style={styles.controlButton}
                                 onClick={() => removePlan(id)}
-                                title="このプランを削除"
+                                title="この探検を削除"
                               >
                                 <div style={styles.buttonIcon}>
                                   <MinusCircle size={16} color="var(--kure-red)" />
@@ -1020,7 +945,7 @@ const filteredChoices = useMemo(() => {
             <div>
             <div style={styles.tagContainer as React.CSSProperties}>
                 <div style={styles.tagTitleContainer as React.CSSProperties}>
-                <div style={styles.tagTitle}>観光地リスト</div>
+                <div style={styles.tagTitle}>探検地リスト</div>
                 <div style={styles.underline}></div>
                 </div>
                 {/* フィルターと検索のコンテナ */}
@@ -1032,7 +957,7 @@ const filteredChoices = useMemo(() => {
         <div style={styles.searchContainer as React.CSSProperties}>
           <input
             type="text"
-            placeholder="観光地を検索..."
+            placeholder="探検地を検索..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             style={styles.searchInput}
@@ -1212,14 +1137,14 @@ const filteredChoices = useMemo(() => {
           <div style={{ display: "flex", flexDirection: "column", marginTop: "12px" }}>
     <div style={styles.tagContainer as React.CSSProperties}>
       <div style={{ ...styles.tagTitleContainer as React.CSSProperties, paddingLeft: "6px" }}>
-        <div style={styles.tagTitle}>あなたの観光</div>
+        <div style={styles.tagTitle}>あなたの探検</div>
         <div style={styles.underline}></div>
       </div>
               {/* 検索欄 */}
               <div style={styles.searchContainer as React.CSSProperties}>
             <input
               type="text"
-              placeholder="タイトルを検索"
+              placeholder="探検のタイトルを検索"
               value={searchQueryCourse}
               onChange={(e) => setSearchQueryCourse(e.target.value)}
               style={styles.searchInput}
@@ -1420,14 +1345,14 @@ const filteredChoices = useMemo(() => {
           <div style={{ display: "flex", flexDirection: "column", marginTop: "12px" }}>
     <div style={styles.tagContainer as React.CSSProperties}>
       <div style={{ ...styles.tagTitleContainer as React.CSSProperties, paddingLeft: "6px" }}>
-        <div style={styles.tagTitle}>みんなの観光</div>
+        <div style={styles.tagTitle}>みんなの探検</div>
         <div style={styles.underline}></div>
       </div>
               {/* 検索欄 */}
               <div style={styles.searchContainer as React.CSSProperties}>
             <input
               type="text"
-              placeholder="タイトルを検索"
+              placeholder="探検のタイトルを検索"
               value={searchQueryCourse}
               onChange={(e) => setSearchQueryCourse(e.target.value)}
               style={styles.searchInput}
@@ -1632,17 +1557,6 @@ const filteredChoices = useMemo(() => {
   
   function handleDragEnd(event: DragEndEvent) {
     const {over, active} = event;
-    
-    console.group('ドラッグ&ドロップ操作の結果');
-    console.log('=== 現在の状態 ===');
-    console.log('🎯 ドラッグ先要素一覧:', containers);
-    console.log('📍 登録済み観光情報:', family.map(item => ({
-      ドラッグ先ID: item.parentId,
-      観光地名: item.child?.location_name,
-      時間: item.time
-    })));
-    console.groupEnd();
-    
     if (family.length === 0) {
       if (over) {
         setFamily((prevItems: family[]) => [
