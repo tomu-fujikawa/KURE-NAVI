@@ -210,11 +210,12 @@ export default function Page() {
       padding: '0 0.5rem',
     },
     title: {
-      fontSize: '1.875rem',
+      fontSize: '42px',
       fontWeight: 'bold',
       color: 'var(--kure-navy)',
-      marginBottom: '2rem',
+      marginBottom: '12px',
       textAlign: 'center',
+      marginTop: '24px',  
     },
     buttonContainer: {
       display: 'flex',
@@ -841,9 +842,12 @@ const filteredChoices = useMemo(() => {
   return (
     <div style={styles.container}>
       <div style={styles.card} className="container-card">
-        <h1 style={styles.title as React.CSSProperties}>Kure-NAVI</h1>
-        
-        <div style={{display:"flex", flexDirection:"row", alignItems:"center",gap:"52px",justifyContent:"center"}}>
+        <h1 style={styles.title as React.CSSProperties}>KURE-Navi</h1>
+        <h2 style={{fontSize:"32px", fontWeight:"bold", color:"var(--kure-blue)", textAlign:"center", marginTop:"4px",marginBottom:"128px"}}>〜みんなで呉を探検しよう！〜</h2>
+
+        <div style={{display:"flex", flexDirection:"column", alignItems:"center",gap:"52px",justifyContent:"center"}}>
+        <h3 style={{paddingLeft:"64px",fontSize:"24px", fontWeight:"bold", color:"var(--kure-blue-dark)", marginTop:"4px"}}>あなたの探検を作成しよう！</h3>
+                <div style={{display:"flex", flexDirection:"row", alignItems:"center",gap:"52px",justifyContent:"center"}}>
           <div style={{display:"flex", flexDirection:"row", alignItems:"center",gap:"40px", paddingLeft:"16px"}}>
                     {/* 🔍 タイトル入力欄 */}
             <input
@@ -885,6 +889,8 @@ const filteredChoices = useMemo(() => {
             プランを登録
           </Button>
         </div>
+        </div>
+
  
 
         <DndContext onDragEnd={handleDragEnd}>
@@ -1044,7 +1050,7 @@ const filteredChoices = useMemo(() => {
         </div>
       </div>
               </div>
-              <div style={styles.choicesContainer}>
+              <div style={{...styles.choicesContainer, border:"4px solid var(--kure-blue)", marginTop:"20px",borderRadius:"25px",padding:"36px 56px 30px",background:"white" }}>
               {filteredChoices && filteredChoices
                 .map((item: Choice) => {
                   const referencePoint = family.length > 0 
@@ -1245,7 +1251,7 @@ const filteredChoices = useMemo(() => {
   </div>
 
   {/* 各観光プランを縦に並べる */}
-  <div style={{ display: "flex", flexDirection: "column", gap: "20px", marginTop:"20px",marginLeft:"24px" }}>
+  <div style={{ display: "flex", flexDirection: "column", gap: "20px", marginTop:"20px",marginLeft:"24px",border:"4px solid var(--kure-blue)",borderRadius:"25px",padding:"12px" }}>
   {filteredSightseeingCourse.map((course: Course, courseIndex: number) => {
   const totalDistance = calculateTotalDistance(course.destinations); // 距離を計算
   const totalDistanceText = `${totalDistance.toFixed(1)} km`; // 🔥 km を追加
@@ -1451,7 +1457,7 @@ const filteredChoices = useMemo(() => {
   </div>
 
   {/* 各観光プランを縦に並べる */}
-  <div style={{ display: "flex", flexDirection: "column", gap: "20px", marginTop:"20px",marginLeft:"24px" }}>
+  <div style={{ display: "flex", flexDirection: "column", gap: "20px", marginTop:"20px",marginLeft:"24px",border:"4px solid var(--kure-blue)",borderRadius:"25px",padding:"12px"  }}>
   {filteredSightseeingCourse.map((course: Course, courseIndex: number) => {
   const totalDistance = calculateTotalDistance(course.destinations); // 距離を計算
   const totalDistanceText = `${totalDistance.toFixed(1)} km`; // 🔥 km を追加
