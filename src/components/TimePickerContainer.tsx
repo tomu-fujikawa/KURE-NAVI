@@ -16,9 +16,10 @@ export default function TimePickerContainer({ containers, family, onTimeChange }
       width: '100%',
       overflowX: 'auto',
       padding: '1rem',
+      justifyContent: 'center',
     },
     timePickerWrapper: {
-      width: '16rem',
+      // width: '16rem',
       display: 'flex',
       justifyContent: 'center',
     }
@@ -28,13 +29,18 @@ export default function TimePickerContainer({ containers, family, onTimeChange }
       {containers.map((id) => {
         const foundItem = family.find((item) => item.parentId === id);
         return (
-          <div key={id} style={styles.timePickerWrapper}>
-            {foundItem && (
+          <div key={id}>
+                        {foundItem && (
+                          <div style={{display:"flex", flexDirection:"row", alignItems:"center", justifyContent:"center", gap:"1rem"}}>
+                       <p style={{fontSize:"0.8rem", fontWeight:"700", color:"var(--kure-blue)"}}>到着時刻</p> 
+                      <div key={id} style={styles.timePickerWrapper}>
               <TimePicker
                 onChange={(time) => onTimeChange(foundItem.child?.location_name || '', time)}
                 initialTime={foundItem.time}
               />
-            )}
+          </div>
+                          </div>
+                      )}
           </div>
         );
       })}

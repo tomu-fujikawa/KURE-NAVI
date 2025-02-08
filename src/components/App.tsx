@@ -76,7 +76,7 @@ export default function Page({label}:any) {
             sightseeingData.push({ id: doc.id, ...doc.data() });
           });
           setSightseeingCourse(sightseeingData);
-          console.log("sightseeingCourse",sightseeingCourse);
+          console.log("sightseeingData",sightseeingData);
         } catch (error) {
           console.error("Error fetching sightseeing:", error);
         }
@@ -1219,18 +1219,42 @@ const filteredSightseeingCourse = useMemo(() => {
           paddingBottom: "10px",
           maxWidth: "100%",
           alignItems: "center",
+          zIndex: 0, // スクロールバーのz-indexを設定
         }}
-      >
+      >          
+      {/* border: "3px solid var(--kure-blue)",
+      borderRadius: "25px",
+      padding: "12px 0 12px 12px", */}
         {course.destinations.map((destination: any, index: number) => (
           <div key={"sightseeing" + courseIndex + index} style={{ display: "flex", flexDirection: "row", alignItems: "center", gap: "10px" }}>
             {/* 観光スポットカード */}
             <div style={{ ...styles.sightseeing_card, flex: "0 0 auto",
               cursor: 'grab',
               transition: 'transform 0.4s ease',
+              position: 'relative', // 相対位置を設定
              }}
              onMouseEnter={() => handleEveryoneItemHover(destination,course)} // ホバー時の処理
              onMouseLeave={handleEveryoneItemLeave} // ホバーを外したときの処理
              > 
+             {destination.visit_time && ( // visit_timeが存在する場合のみ表示
+               <div style={{
+                 position: 'absolute',
+                 top: '104px',
+                 right: '10px',
+                 backgroundColor: 'rgba(255, 255, 255, 0.9)',
+                 padding: '4px 8px',
+                 borderRadius: '10px',
+                 fontSize: '1rem',
+                 color: 'var(--kure-blue)',
+                 fontWeight: 'bold',
+                 boxShadow: '1 2px 2px rgba(0, 0, 0, 0.1)',
+                 zIndex: 1,
+                 border: '1px solid var(--kure-blue)',
+                 display: everyonHoveredLocation == destination.location_name && everyoneHoveredTitle == course.title ? "none" : "block"
+               }}>
+                 <p style={{fontSize:"12px"}}>到着時刻 {destination.visit_time}</p>
+               </div>
+             )}
              {everyonHoveredLocation == destination.location_name && everyoneHoveredTitle == course.title ? (
               <div style={{ textAlign: 'left' }}>
                 <h3
