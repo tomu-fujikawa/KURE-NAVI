@@ -54,7 +54,7 @@ export default function Page({label}:any) {
     const [hoveredDraggableLocation, setHoveredDraggableLocation] = useState<string | null>(null); // 新しい状態変数を追加
     
     useEffect(() => {
-      fetch("/locations3.csv")
+      fetch("/locations4.csv")
           .then((response) => response.text())
           .then((csvText) => {
               const parsedData = Papa.parse<data>(csvText, {
@@ -886,7 +886,6 @@ const filteredSightseeingCourse = useMemo(() => {
           </div>
           <Button 
             onClick={handleAddCourse}
-            // disabled={!tripTitle || family.length === 0}
             style={{
               padding: "0.5rem 1rem",
               borderRadius: "8px",
@@ -932,7 +931,6 @@ const filteredSightseeingCourse = useMemo(() => {
                                 title="このプランを削除"
                               >
                                 <div style={styles.buttonIcon}>
-                                  {/* <Trash2 size={16} color="var(--kure-red)" /> */}
                                   <MinusCircle size={16} color="var(--kure-red)" />
                                 </div>
                               </button>
@@ -1104,10 +1102,42 @@ const filteredSightseeingCourse = useMemo(() => {
                         style={{...styles.cardImage as React.CSSProperties, height: hoveredLocation === item.location_name ? "45%" : "50%"}}
                       />
                       {hoveredLocation === item.location_name ? ( // ホバー中の観光地の説明を表示
-                      <div style={{display:"flex", flexDirection:"column", alignItems:"flex-start", justifyContent:"center", gap:"4px"}}>
-                          <div style={{...styles.cardTitle}} title={item.location_name}>
-                        {item.location_name}
-                      </div>  
+                      <div style={{display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center", gap:"4px"}}>                                                                               
+                                          <a 
+                                            href={`https://www.google.com/maps?q=${item?.latitude},${item?.longitude}`} 
+                                            target="_blank" 
+                                            rel="noopener noreferrer" 
+                                            style={{ 
+                                              display: 'flex',
+                                              flexDirection: 'row',
+                                              alignItems: 'flex-start',
+                                              justifyContent: 'flex-start',
+                                              textDecoration: 'underline', // ✅ 下線を明示的に指定
+                                            }}
+                                          >
+                                            <div 
+                                              style={styles.locationTitleContainer} 
+                                              className="hover:opacity-70"
+                                            >                                              
+                                          <span 
+                                            style={{
+                                              ...styles.cardTitle,
+                                              fontSize: '16px',
+                                              fontWeight: 'bold',
+                                              marginBottom: "2px",
+                                              padding: "0",
+                                              maxWidth: '300px', // ✅ 最大幅を300pxに設定
+                                              display: 'inline-block', // ✅ 必須 (widthを適用するため)
+                                              wordBreak: 'break-word', // ✅ 300pxを超えたら単語の途中でも改行
+                                              whiteSpace: 'normal', // ✅ テキストの自動折り返しを有効化
+                                              overflowWrap: 'break-word', // ✅ 改行可能な場所がなくても折り返す
+                                            }}
+                                          >
+                                            {item?.location_name}
+                                          </span>
+                                              <Map style={styles.mapIcon} />
+                                            </div>
+                                          </a>
                       <div style={{ fontSize: '9px', color: 'white', textAlign: 'left' }}>
                           {item.explanation}
                         </div>                      
@@ -1289,7 +1319,7 @@ const filteredSightseeingCourse = useMemo(() => {
              )}
              {everyonHoveredLocation == destination.location_name && everyoneHoveredTitle == course.title ? (
               <div style={{ textAlign: 'left' }}>
-                <h3
+                {/* <h3
                   style={{
                     fontSize: "1.5rem",
                     fontWeight: "bold",
@@ -1301,7 +1331,38 @@ const filteredSightseeingCourse = useMemo(() => {
                   }}
                 >
                   {destination.location_name}
-                </h3>
+                </h3> */}
+                <a 
+                  href={`https://www.google.com/maps?q=${destination?.latitude},${destination?.longitude}`} 
+                  target="_blank" 
+                  rel="noopener noreferrer" 
+                  style={{ 
+                    display: 'flex',
+                    flexDirection: 'row',
+                    alignItems: 'flex-start',
+                    justifyContent: 'flex-start',
+                    textDecoration: 'underline', // ✅ 下線を明示的に指定
+                    color: 'var(--kure-blue)',
+                  }}
+                >
+                  <div 
+                    style={styles.locationTitleContainer} 
+                    className="hover:opacity-70"
+                  >
+                    <span style={{ marginBottom: "4px",
+                                    fontSize: "1.5rem",
+                                    fontWeight: "bold",
+                                    color: "var(--kure-blue)",
+                                    whiteSpace: "nowrap", // 改行を防ぐ
+                                    overflow: "hidden", // はみ出した部分を非表示
+                                    textOverflow: "ellipsis", // 省略記号（...）を表示
+                                    maxWidth: "152px", // 親要素の幅を超えないようにする
+                     }}>
+                      {destination?.location_name}
+                    </span>
+                    <Map style={{...styles.mapIcon, color: 'var(--kure-blue)'}} />
+                  </div>
+                </a>
                 <p style={{ 
                   fontSize: '0.875rem', 
                   color: 'black', 
