@@ -74,6 +74,7 @@ export default function Page() {
     // 検索用の状態を追加
     const [searchQuery, setSearchQuery] = useState('');
     const [searchQueryCourse, setSearchQueryCourse] = useState('');
+    const [searchQuerySpot, setSearchQuerySpot] = useState(''); // 追加: 観光スポット検索用
     const CARDS_PER_ROW = 5;
     const INITIAL_ROWS = 3;
     const ROW_INCREMENT = 3;
@@ -537,10 +538,24 @@ const filteredChoices = useMemo(() => {
   }, []);
   
   const filteredSightseeingCourse = useMemo(() => {
-    return sightseeingCourse.filter((course) => {
-      return calculateTotalDistance(course.destinations) <= maxTotalDistance;
-    });
-  }, [sightseeingCourse, maxTotalDistance, calculateTotalDistance]); // ✅ `calculateTotalDistance` が useCallback でメモ化された
+    return sightseeingCourse
+      .filter((course) => {
+        // 距離フィルター
+        const distanceFilter = calculateTotalDistance(course.destinations) <= maxTotalDistance;
+        
+        // コースタイトルフィルター
+        const titleFilter = !searchQueryCourse || 
+          course.title.toLowerCase().includes(searchQueryCourse.toLowerCase());
+        
+        // 観光スポットフィルター
+        const spotFilter = !searchQuerySpot || 
+          course.destinations.some(spot => 
+            spot.location_name.toLowerCase().includes(searchQuerySpot.toLowerCase())
+          );
+
+        return distanceFilter && titleFilter && spotFilter;
+      });
+  }, [sightseeingCourse, maxTotalDistance, calculateTotalDistance, searchQueryCourse, searchQuerySpot]);
 
 
 
@@ -1141,29 +1156,56 @@ const filteredChoices = useMemo(() => {
         <div style={styles.underline}></div>
       </div>
               {/* 検索欄 */}
-              <div style={styles.searchContainer as React.CSSProperties}>
-            <input
-              type="text"
-              placeholder="探検のタイトルを検索"
-              value={searchQueryCourse}
-              onChange={(e) => setSearchQueryCourse(e.target.value)}
-              style={styles.searchInput}
-            />
-            <svg
-              style={styles.searchIcon as React.CSSProperties}
-              xmlns="http://www.w3.org/2000/svg"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            >
-              <circle cx="11" cy="11" r="8"/>
-              <line x1="21" y1="21" x2="16.65" y2="16.65"/>
-            </svg>
-          </div>
-          <div style={{ display: "flex", alignItems: "center", gap: "1rem", marginBottom: "10px" }}>
+              <div style={styles.filterContainer}>
+                {/* タイトル検索欄 */}
+                <div style={styles.searchContainer as React.CSSProperties}>
+                  <input
+                    type="text"
+                    placeholder="探検のタイトルを検索..."
+                    value={searchQueryCourse}
+                    onChange={(e) => setSearchQueryCourse(e.target.value)}
+                    style={styles.searchInput}
+                  />
+                  <svg
+                    style={styles.searchIcon as React.CSSProperties}
+                    xmlns="http://www.w3.org/2000/svg"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  >
+                    <circle cx="11" cy="11" r="8"/>
+                    <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+                  </svg>
+                </div>
+
+                {/* 観光スポット検索欄を追加 */}
+                <div style={styles.searchContainer as React.CSSProperties}>
+                  <input
+                    type="text"
+                    placeholder="観光スポットを検索..."
+                    value={searchQuerySpot}
+                    onChange={(e) => setSearchQuerySpot(e.target.value)}
+                    style={styles.searchInput}
+                  />
+                  <svg
+                    style={styles.searchIcon as React.CSSProperties}
+                    xmlns="http://www.w3.org/2000/svg"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  >
+                    <circle cx="11" cy="11" r="8"/>
+                    <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+                  </svg>
+                </div>
+              </div>
+              <div style={{ display: "flex", alignItems: "center", gap: "1rem", marginBottom: "10px" }}>
     <label>最大合計距離 (km):</label>
     <input
       type="number"
@@ -1349,29 +1391,56 @@ const filteredChoices = useMemo(() => {
         <div style={styles.underline}></div>
       </div>
               {/* 検索欄 */}
-              <div style={styles.searchContainer as React.CSSProperties}>
-            <input
-              type="text"
-              placeholder="探検のタイトルを検索"
-              value={searchQueryCourse}
-              onChange={(e) => setSearchQueryCourse(e.target.value)}
-              style={styles.searchInput}
-            />
-            <svg
-              style={styles.searchIcon as React.CSSProperties}
-              xmlns="http://www.w3.org/2000/svg"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            >
-              <circle cx="11" cy="11" r="8"/>
-              <line x1="21" y1="21" x2="16.65" y2="16.65"/>
-            </svg>
-          </div>
-          <div style={{ display: "flex", alignItems: "center", gap: "1rem", marginBottom: "10px" }}>
+              <div style={styles.filterContainer}>
+                {/* タイトル検索欄 */}
+                <div style={styles.searchContainer as React.CSSProperties}>
+                  <input
+                    type="text"
+                    placeholder="探検のタイトルを検索..."
+                    value={searchQueryCourse}
+                    onChange={(e) => setSearchQueryCourse(e.target.value)}
+                    style={styles.searchInput}
+                  />
+                  <svg
+                    style={styles.searchIcon as React.CSSProperties}
+                    xmlns="http://www.w3.org/2000/svg"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  >
+                    <circle cx="11" cy="11" r="8"/>
+                    <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+                  </svg>
+                </div>
+
+                {/* 観光スポット検索欄を追加 */}
+                <div style={styles.searchContainer as React.CSSProperties}>
+                  <input
+                    type="text"
+                    placeholder="観光スポットを検索..."
+                    value={searchQuerySpot}
+                    onChange={(e) => setSearchQuerySpot(e.target.value)}
+                    style={styles.searchInput}
+                  />
+                  <svg
+                    style={styles.searchIcon as React.CSSProperties}
+                    xmlns="http://www.w3.org/2000/svg"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  >
+                    <circle cx="11" cy="11" r="8"/>
+                    <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+                  </svg>
+                </div>
+              </div>
+              <div style={{ display: "flex", alignItems: "center", gap: "1rem", marginBottom: "10px" }}>
     <label>最大合計距離 (km):</label>
     <input
       type="number"
