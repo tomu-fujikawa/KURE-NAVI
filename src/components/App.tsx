@@ -80,6 +80,7 @@ export default function Page() {
     const ROW_INCREMENT = 3;
     const [visibleRows, setVisibleRows] = useState(INITIAL_ROWS);
     const [sightseeingCourse, setSightseeingCourse] = useState<Course[]>([]);
+    const [myTravelCourses, setMyTravelCourses] = useState<Course[]>([]);
     const [tripTitle, setTripTitle] = useState("");
     const [maxTotalDistance, setMaxTotalDistance] = useState<number>(20); // フィルター用の最大合計距離（km）
     const [hoveredLocation, setHoveredLocation] = useState<string | null>(null); // ホバーした観光地のIDを保持
@@ -537,6 +538,26 @@ const filteredChoices = useMemo(() => {
     return totalDistance;
   }, []);
   
+  const filteredMyTravelCourses = useMemo(() => {
+    return myTravelCourses
+      .filter((course) => {
+        // 距離フィルター
+        const distanceFilter = calculateTotalDistance(course.destinations) <= maxTotalDistance;
+        
+        // コースタイトルフィルター
+        const titleFilter = !searchQueryCourse || 
+          course.title.toLowerCase().includes(searchQueryCourse.toLowerCase());
+        
+        // 観光スポットフィルター
+        const spotFilter = !searchQuerySpot || 
+          course.destinations.some(spot => 
+            spot.location_name.toLowerCase().includes(searchQuerySpot.toLowerCase())
+          );
+
+        return distanceFilter && titleFilter && spotFilter;
+      });
+  }, [myTravelCourses, maxTotalDistance, calculateTotalDistance, searchQueryCourse, searchQuerySpot]);
+
   const filteredSightseeingCourse = useMemo(() => {
     return sightseeingCourse
       .filter((course) => {
@@ -556,9 +577,6 @@ const filteredChoices = useMemo(() => {
         return distanceFilter && titleFilter && spotFilter;
       });
   }, [sightseeingCourse, maxTotalDistance, calculateTotalDistance, searchQueryCourse, searchQuerySpot]);
-
-
-
 
   // アルファベットのIDを生成する関数を追加
   const generateAlphabetId = (index: number): string => {
@@ -729,13 +747,14 @@ const filteredChoices = useMemo(() => {
       alert("旅のタイトルを入力し、最低1つの観光地を追加してください。");
       return;
     }
+    
     // 現在の時刻を取得
     const currentTime = new Date().toISOString();
     
     // 登録データを整形
-    const registrationData = {
-      title: tripTitle,  // ユーザーが入力した旅の名前
-      createdAt: currentTime,  // 現在の時刻
+    const registrationData: Course = {
+      id: currentTime, // 一意のIDとして現在時刻を使用
+      title: tripTitle,
       destinations: family.map(item => ({
         location_name: item.child?.location_name || '',
         latitude: item.child?.latitude || 0,
@@ -744,18 +763,19 @@ const filteredChoices = useMemo(() => {
         explanation: item.child?.explanation || '',
         tag: item.child?.tag || '',
         visit_time: item.time || ''
-      }))
+      })),
+      totalDistance: calculateTotalDistance(family.map(item => item.child as data)),
+      totalTime: family[family.length - 1]?.time || ''
     };
     
     try {
-      // Firebase Firestore にデータを追加
+      // Firebaseへの登録
       const docRef = await addDoc(collection(db, "posts"), registrationData);
+      
+      // ローカルのあなたの探検リストに追加
+      setMyTravelCourses(prev => [...prev, registrationData]);
+      
       alert("プランが登録されました！");
-  
-      // // 成功後にフォームをリセット
-      // setTripTitle("");
-      // setFamily([]);
-      // setContainers(['A']); // 初期状態に戻す
     } catch (error) {
       console.error("登録エラー:", error);
       alert("プランの登録に失敗しました。");
@@ -1227,7 +1247,7 @@ const filteredChoices = useMemo(() => {
 
     {/* 各観光プランを縦に並べる */}
     <div style={{ display: "flex", flexDirection: "column", gap: "20px", marginTop:"20px",marginLeft:"24px",border:"4px solid var(--kure-blue)",borderRadius:"25px",padding:"12px" }}>
-    {filteredSightseeingCourse.map((course: Course, courseIndex: number) => {
+    {filteredMyTravelCourses.map((course: Course, courseIndex: number) => {
     const totalDistance = calculateTotalDistance(course.destinations); // 距離を計算
     const totalDistanceText = `${totalDistance.toFixed(1)} km`; // 🔥 km を追加
 
