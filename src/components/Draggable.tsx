@@ -26,6 +26,7 @@ export default function Draggable({children, id, hoverItem, cardTitle}: Draggabl
         ...style,
         width: '100%',
         zIndex: hoverItem === cardTitle ? 1000 : 1,
+        position: 'relative',
       }}
       {...listeners} 
       {...attributes}

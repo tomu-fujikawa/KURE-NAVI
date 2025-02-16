@@ -1,6 +1,6 @@
 "use client";
 
-import { DndContext, DragEndEvent } from '@dnd-kit/core';
+import { DndContext, DragEndEvent,DragStartEvent } from '@dnd-kit/core';
 import Droppable from './Droppable';
 import Draggable from './Draggable';
 import { useState,useEffect, useMemo } from 'react';
@@ -87,7 +87,23 @@ export default function Page() {
     const [everyonHoveredLocation, setEveryoneHoveredLocation] = useState<string | null>(null); // ホバーした観光地のIDを保持
     const [everyoneHoveredTitle, setEveryoneHoveredTitle] = useState<string | null>(null); // ホバーした観光地のIDを保持
     const [hoveredDraggableLocation, setHoveredDraggableLocation] = useState<string | null>(null); // 新しい状態変数を追加
-    
+    const [isDragging, setIsDragging] = useState(false);
+
+    const [eyeMove, setEyeMove] = useState(2);
+    // const [handAngle, setHandAngle] = useState(-25); // 初期角度を-30度に設定
+    const [leftHandAngle, setLeftHandAngle] = useState(25); // 初期角度を-30度に設定
+    const [rightHandAngle, setRightHandAngle] = useState(-25); // 初期角度を-30度に設定
+    const [leftFootAngle, setLeftFootAngle] = useState(8); // 初期角度を-30度に設定
+    const [rightFootAngle, setRightFootAngle] = useState(-8); // 初期角度を-30度に設定
+
+    const [direction, setDirection] = useState(1); // 1: 右へ移動, -1: 左へ移動
+    const [rightHandDirection, setRightHandDirection] = useState(1); // 1: 時計回り, -1: 反時計回り
+    const [leftHandDirection, setLeftHandDirection] = useState(-1); // 1: 時計回り, -1: 反時計回り
+    const [rightFootDirection, setRightFootDirection] = useState(1); // 1: 時計回り, -1: 反時計回り
+    const [leftFootDirection, setLeftFootDirection] = useState(-1); // 1: 時計回り, -1: 反時計回り
+  
+
+  
     useEffect(() => {
       fetch("/locations4.csv")
           .then((response) => response.text())
@@ -118,6 +134,116 @@ export default function Page() {
 
       fetchUsers();
     }, []);
+
+
+
+// アニメーション
+//目の動き
+    useEffect(() => {
+      const interval = setInterval(() => {
+        setEyeMove((prevEyeMove) => {
+          // 新しい値を計算
+          let newEyeMove = prevEyeMove + direction * 1;
+          
+          // 範囲を制限
+          if (newEyeMove > 14) {
+            setDirection(-1);
+            return 14;
+          }
+          if (newEyeMove < 0) {
+            setDirection(1);
+            return 0;
+          }
+          
+          return newEyeMove;
+        });
+      }, 100);
+  
+      return () => clearInterval(interval);
+    }, [direction]);
+
+    // 腕の動き
+    useEffect(() => {
+      const interval = setInterval(() => {
+        setRightHandAngle((prevAngle) => {
+          // 新しい値を計算
+          let newAngle = prevAngle + rightHandDirection * 5;
+          
+          // 範囲を制限
+          if (newAngle > 30) {
+            setRightHandDirection(-1);
+            return 30;
+          }
+          if (newAngle < -30) {
+            setRightHandDirection(1);
+            return -30;
+          }
+          
+          return newAngle;
+        });
+        setLeftHandAngle((prevAngle) => {
+          // 新しい値を計算
+          let newAngle = prevAngle + leftHandDirection * 5;
+          
+          // 範囲を制限
+          if (newAngle > 30) {
+            setLeftHandDirection(-1);
+            return 30;
+          }
+          if (newAngle < -30) {
+            setLeftHandDirection(1);
+            return -30;
+          }
+          
+          return newAngle;
+        });
+      }, 100);
+
+      return () => clearInterval(interval);
+    }, [rightHandDirection]);
+
+    // 足の動き
+    useEffect(() => {
+      const interval = setInterval(() => {
+
+        setLeftFootAngle((prevAngle) => {
+          // 新しい値を計算
+          let newAngle = prevAngle + leftFootDirection * 5;
+          
+          // 範囲を制限
+          if (newAngle > 10) {
+            setLeftFootDirection(-1);
+            return 10;
+          } 
+          if (newAngle < -10) {
+            setLeftFootDirection(1);
+            return - 10;
+          }
+          
+          return newAngle;
+        });
+
+
+        setRightFootAngle((prevAngle) => {
+          // 新しい値を計算
+          let newAngle = prevAngle + rightFootDirection * 5;
+          
+          // 範囲を制限
+          if (newAngle > 10) {
+            setRightFootDirection(-1);
+            return 10;
+          } 
+          if (newAngle < -10) {
+            setRightFootDirection(1);
+            return - 10;
+          }
+          
+          return newAngle;
+        });
+      }, 100);  
+
+      return () => clearInterval(interval);
+    }, [rightFootDirection]);
 
   const addPlan = () => {
     const nextLetter = String.fromCharCode(65 + containers.length); // A, B, C...
@@ -856,7 +982,7 @@ const filteredChoices = useMemo(() => {
           </Button>
         </div>
         </div>
-        <DndContext onDragEnd={handleDragEnd}>
+        <DndContext onDragEnd={handleDragEnd} onDragStart={handleDragStart}>
           <div style={styles.mainContent as React.CSSProperties}>
             <div style={styles.scrollContainer as React.CSSProperties}>
               <div style={styles.timePickerAndDroppableWrapper}>
@@ -1039,12 +1165,55 @@ const filteredChoices = useMemo(() => {
                 .slice(0, CARDS_PER_ROW * visibleRows)
                 .map((item: Destination) => (
                   <Draggable key={item.location_name} id={item.location_name} hoverItem={hoveredLocation || undefined} cardTitle={item.location_name}>
+                    {/* <div style={{width:"100%",height:"100%",backgroundColor:"red"}}>aaaaaaa</div> */}
+                    {
+                    isDragging &&hoveredLocation === item.location_name && 
+                    <div style={{width:"150%",height:"150%", position:"absolute",top:"-50px",left:"-50px"}}>
+                      <div style={{width:"100%",height:"100%",position:"relative",zIndex:"0"}}>
+                      <img src="./kurekun/png2/kurekun_body.png" style={{position:"absolute",top:"-50px",left:"0px",width:"300px",height:"350px",maxWidth:"300px"}}></img>
+                      <img src="./kurekun/png2/kurekun_left_whiteEye.png" style={{position:"absolute",top:"-42px",left:"150px",width:"42px",height:"42px",maxWidth:"42px"}}></img>
+                      <div style={{position:"absolute",top:"-42px",left:"150px",width:"42px",height:"42px",maxWidth:"42px"}}>
+                        <img src="./kurekun/png2/kurekun_left_blueEye.png" style={{position:"absolute",top:"10px",
+                        left: `${eyeMove}px`, // leftを動的に変更
+                        transition: "left 0.1s linear" // スムーズな動き
+                          ,width:"26px",height:"26px",maxWidth:"26px"}}></img>
+                      </div>
+                      <img src="./kurekun/png2/kurekun_right_whiteEye.png" style={{position:"absolute",top:"-42px",left:"190px",width:"42px",height:"42px",maxWidth:"42px"}}></img>
+                      <div style={{position:"absolute",top:"-42px",left:"190px",width:"26px",height:"26px",maxWidth:"26px"}}>
+                      <img src="./kurekun/png2/kurekun_right_blueEye.png" style={{position:"absolute",top:"10px",
+                        left: `${eyeMove}px`, // leftを動的に変更
+                        transition: "left 0.1s linear" // スムーズな動き
+                        ,width:"26px",height:"26px",maxWidth:"26px"}}></img>
+                      </div>
+                      <img src="./kurekun/png2/kurekun_left_hand.png" style={{position:"absolute",top:"80px",left:"-120px",width:"163px",height:"145px",maxWidth:"163px",
+                        transform: `rotate(${leftHandAngle}deg)`, // 回転を適用
+                        transformOrigin: "right center", // 右端を回転の中心にする
+                        transition: "transform 2s linear", // スムーズな回転
+                      }}></img>
+                      <img src="./kurekun/png2/kurekun_right_hand.png" style={{position:"absolute",top:"80px",right:"-120px",width:"163px",height:"145px",maxWidth:"163px",
+                                transform: `rotate(${rightHandAngle}deg)`, // 回転を適用
+                                transformOrigin: "left center", // 左端を回転の中心にする
+                                transition: "transform 2s linear", // スムーズな回転
+                      }}></img>
+                      <img src="./kurekun/png2/kurekun_left_foot.png" style={{position:"absolute",top:"240px",left:"-30px",width:"177px",height:"169px",maxWidth:"177px",
+                        transform: `rotate(${leftFootAngle}deg)`, // 回転を適用
+                        transformOrigin: "top center", // 左端を回転の中心にする
+                        transition: "transform 1s linear", // スムーズな回転
+                      }}></img>
+                      <img src="./kurekun/png2/kurekun_right_foot.png" style={{position:"absolute",top:"240px",right:"-30px",width:"177px",height:"169px",maxWidth:"177px",
+                        transform: `rotate(${rightFootAngle}deg)`, // 回転を適用
+                        transformOrigin: "top center", // 左端を回転の中心にする
+                        transition: "transform 1s linear", // スムーズな回転
+                      }}></img>
+                      </div>
+                    </div>}
                     <div 
                       style={{
                         ...styles.draggableItem as React.CSSProperties,
                         position: 'relative',
                         cursor: 'grab',
                         transform: hoveredLocation === item.location_name ? 'scale(1.5)' : 'scale(1)', // ホバー時に拡大
+                        // transform: hoveredLocation === item.location_name ? 'scale(1.5)' : 'scale(1.5)', // ホバー時に拡大
                         transition: 'transform 0.4s ease',
                         zIndex: hoveredLocation === item.location_name ? 1000 : 1,
                       }} 
@@ -1644,7 +1813,13 @@ const filteredChoices = useMemo(() => {
     </div>
   );
   
+  function handleDragStart(event: DragStartEvent) {
+    setIsDragging(true);
+  }
+
   function handleDragEnd(event: DragEndEvent) {
+    setIsDragging(false);
+
     const {over, active} = event;
     if (family.length === 0) {
       if (over) {
