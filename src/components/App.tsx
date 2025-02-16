@@ -102,8 +102,8 @@ export default function Page() {
     const [rightFootDirection, setRightFootDirection] = useState(1); // 1: 時計回り, -1: 反時計回り
     const [leftFootDirection, setLeftFootDirection] = useState(-1); // 1: 時計回り, -1: 反時計回り
   
+    const [selectedCourse, setSelectedCourse] = useState<Course[]>([]); // セットした探検用のstate
 
-  
     useEffect(() => {
       fetch("/locations4.csv")
           .then((response) => response.text())
@@ -704,6 +704,7 @@ const filteredChoices = useMemo(() => {
       });
   }, [sightseeingCourse, maxTotalDistance, calculateTotalDistance, searchQueryCourse, searchQuerySpot]);
 
+
   // アルファベットのIDを生成する関数を追加
   const generateAlphabetId = (index: number): string => {
     return String.fromCharCode(65 + index); // 65は'A'のASCIIコード
@@ -923,6 +924,16 @@ const filteredChoices = useMemo(() => {
 
   const handleEveryoneItemLeave = () => {
     setEveryoneHoveredLocation(null); // ホバーを外したときにIDをリセット
+  };
+
+  // 探検をセットする関数
+  const handleSetCourse = (course: Course) => {
+    setSelectedCourse([course]);
+  };
+
+  // 探検を解除する関数
+  const handleClearCourse = (course: Course) => {
+    setSelectedCourse([]);
   };
 
   return (
@@ -1422,11 +1433,24 @@ const filteredChoices = useMemo(() => {
 
     return (
       <div key={course.id} style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
-        {/* 🌟 タイトル + (合計距離 km) */}
-        <h2 style={{ fontSize: "24px", fontWeight: "bold", color: "var(--kure-blue)" }}>
-          {course.title} ({totalDistanceText}) {/* ✅ km を明示的に追加 */}
-        </h2>
-
+        <div style={{ display: "flex", alignItems: "center", gap: "1rem" }}>
+          <button
+            onClick={() => handleSetCourse(course)}
+            style={{
+              padding: "0.5rem 1rem",
+              backgroundColor: "var(--kure-blue)",
+              color: "white",
+              border: "none",
+              borderRadius: "8px",
+              cursor: "pointer",
+            }}
+          >
+            この探検をセット
+          </button>
+          <h2 style={{ fontSize: "24px", fontWeight: "bold", color: "var(--kure-blue)" }}>
+            {course.title} ({totalDistanceText})
+          </h2>
+        </div>
         {/* destinations を横に並べる (4つを超えたら横スクロール) */}
         <div
           style={{
@@ -1657,11 +1681,24 @@ const filteredChoices = useMemo(() => {
 
     return (
       <div key={course.id} style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
-        {/* 🌟 タイトル + (合計距離 km) */}
-        <h2 style={{ fontSize: "24px", fontWeight: "bold", color: "var(--kure-blue)" }}>
-          {course.title} ({totalDistanceText}) {/* ✅ km を明示的に追加 */}
-        </h2>
-
+        <div style={{ display: "flex", alignItems: "center", gap: "1rem" }}>
+          <button
+            onClick={() => handleSetCourse(course)}
+            style={{
+              padding: "0.5rem 1rem",
+              backgroundColor: "var(--kure-blue)",
+              color: "white",
+              border: "none",
+              borderRadius: "8px",
+              cursor: "pointer",
+            }}
+          >
+            この探検をセット
+          </button>
+          <h2 style={{ fontSize: "24px", fontWeight: "bold", color: "var(--kure-blue)" }}>
+            {course.title} ({totalDistanceText})
+          </h2>
+        </div>
         {/* destinations を横に並べる (4つを超えたら横スクロール) */}
         <div
           style={{
@@ -1808,7 +1845,185 @@ const filteredChoices = useMemo(() => {
 
 
         {/* // ✅ `sightseeingCourse` をカードデザインで表示 */}
+        <div className="container-card">
+          <div style={{ display: "flex", flexDirection: "column", marginTop: "12px" }}>
+    <div style={styles.tagContainer as React.CSSProperties}>
+      <div style={{ ...styles.tagTitleContainer as React.CSSProperties, paddingLeft: "6px" }}>
+        <div style={styles.tagTitle}>セットした探検</div>
+        <div style={styles.underline}></div>
+  </div>
 
+    </div>
+
+    {/* 各観光プランを縦に並べる */}
+    <div style={{ display: "flex", flexDirection: "column", gap: "20px", marginTop:"20px",marginLeft:"24px",border:"4px solid var(--kure-blue)",borderRadius:"25px",padding:"12px"  }}>
+    {selectedCourse.map((course: Course, courseIndex: number) => {
+    const totalDistance = calculateTotalDistance(course.destinations); // 距離を計算
+    const totalDistanceText = `${totalDistance.toFixed(1)} km`; // 🔥 km を追加
+
+    return (
+      <div key={course.id} style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
+        <div style={{ display: "flex", alignItems: "center", gap: "1rem" }}>
+          <button
+            onClick={() => handleClearCourse(course)}
+            style={{
+              padding: "0.5rem 1rem",
+              backgroundColor: "var(--kure-blue)",
+              color: "white",
+              border: "none",
+              borderRadius: "8px",
+              cursor: "pointer",
+            }}
+          >
+            この探検を解除
+          </button>
+          <h2 style={{ fontSize: "24px", fontWeight: "bold", color: "var(--kure-blue)" }}>
+            {course.title} ({totalDistanceText})
+          </h2>
+        </div>
+        {/* destinations を横に並べる (4つを超えたら横スクロール) */}
+        <div
+          style={{
+            display: "flex",
+            flexDirection: "row",
+            gap: "10px",
+            overflowX: course.destinations.length > 4 ? "auto" : "visible",
+            whiteSpace: "nowrap",
+            paddingBottom: "10px",
+            maxWidth: "100%",
+            alignItems: "center",
+            zIndex: 0, // スクロールバーのz-indexを設定
+          }}
+        >          
+        {/* border: "3px solid var(--kure-blue)",
+        borderRadius: "25px",
+        padding: "12px 0 12px 12px", */}
+          {course.destinations.map((destination: data, index: number) => (
+            <div key={"sightseeing" + courseIndex + index} style={{ display: "flex", flexDirection: "row", alignItems: "center", gap: "10px" }}>
+              {/* 観光スポットカード */}
+              <div style={{ ...styles.sightseeing_card as React.CSSProperties, flex: "0 0 auto",
+                cursor: 'grab',
+                transition: 'transform 0.4s ease',
+                position: 'relative', // 相対位置を設定
+              }}
+              onMouseEnter={() => handleEveryoneItemHover(destination,course)} // ホバー時の処理
+              onMouseLeave={handleEveryoneItemLeave} // ホバーを外したときの処理
+              > 
+              {destination.visit_time && ( // visit_timeが存在する場合のみ表示
+                <div style={{
+                  position: 'absolute',
+                  top: '104px',
+                  right: '10px',
+                  backgroundColor: 'rgba(255, 255, 255, 0.9)',
+                  padding: '4px 8px',
+                  borderRadius: '10px',
+                  fontSize: '1rem',
+                  color: 'var(--kure-blue)',
+                  fontWeight: 'bold',
+                  boxShadow: '1 2px 2px rgba(0, 0, 0, 0.1)',
+                  zIndex: 1,
+                  border: '1px solid var(--kure-blue)',
+                  display: everyonHoveredLocation == destination.location_name && everyoneHoveredTitle == course.title ? "none" : "block"
+                }}>
+                  <p style={{fontSize:"12px"}}>到着時刻 {destination.visit_time}</p>
+                </div>
+              )}
+              {everyonHoveredLocation == destination.location_name && everyoneHoveredTitle == course.title ? (
+                <div style={{ textAlign: 'left' }}>
+                  {/* <h3
+                    style={{
+                      fontSize: "1.5rem",
+                      fontWeight: "bold",
+                      color: "var(--kure-blue)",
+                      whiteSpace: "nowrap", // 改行を防ぐ
+                      overflow: "hidden", // はみ出した部分を非表示
+                      textOverflow: "ellipsis", // 省略記号（...）を表示
+                      maxWidth: "100%", // 親要素の幅を超えないようにする
+                    }}
+                  >
+                    {destination.location_name}
+                  </h3> */}
+                  <a 
+                    href={`https://www.google.com/maps?q=${destination?.latitude},${destination?.longitude}`} 
+                    target="_blank" 
+                    rel="noopener noreferrer" 
+                    style={{ 
+                      display: 'flex',
+                      flexDirection: 'row',
+                      alignItems: 'flex-start',
+                      justifyContent: 'flex-start',
+                      textDecoration: 'underline', // ✅ 下線を明示的に指定
+                      color: 'var(--kure-blue)',
+                    }}
+                  >
+                    <div 
+                      style={styles.locationTitleContainer} 
+                      className="hover:opacity-70"
+                    >
+                      <span style={{ marginBottom: "4px",
+                                      fontSize: "1.5rem",
+                                      fontWeight: "bold",
+                                      color: "var(--kure-blue)",
+                                      whiteSpace: "nowrap", // 改行を防ぐ
+                                      overflow: "hidden", // はみ出した部分を非表示
+                                      textOverflow: "ellipsis", // 省略記号（...）を表示
+                                      maxWidth: "152px", // 親要素の幅を超えないようにする
+                      }}>
+                        {destination?.location_name}
+                      </span>
+                      <Map style={{...styles.mapIcon, color: 'var(--kure-blue)'}} />
+                    </div>
+                  </a>
+                  <p style={{ 
+                    fontSize: '0.875rem', 
+                    color: 'black', 
+                    overflowWrap: 'break-word',
+                    wordBreak: 'break-word',
+                    whiteSpace: 'pre-wrap', // 改行と折り返しを許可
+                    maxWidth: '100%' // 親要素の幅を超えないようにする
+                  }}>
+                    {destination.explanation}                   
+                  </p>
+                </div>
+              ) : (
+                <div style={{width:"100%", height:"100%"}}>
+                  <img
+                  src={destination?.image_url || ''}
+                  alt={destination.location_name || ''}
+                  style={styles.sightseeing_cardImage as React.CSSProperties}
+                />
+                <div style={{...styles.sightseeing_cardTitle, 
+                        fontSize: "1rem",
+                        fontWeight: "500",
+                        overflowWrap: "break-word",
+                        wordBreak: "break-word",
+                        whiteSpace: "pre-wrap",
+                        maxWidth: "100%",
+                        marginTop: "10px",
+                        marginBottom: "4px",
+                        
+                }}>{destination?.location_name}</div>
+                </div>
+              )}
+
+              </div>
+
+              {/* 矢印アイコン (最後の要素の後には入れない) */}
+              {index < course.destinations.length - 1 && (
+                <ChevronRight size={24} color="var(--kure-blue)" />
+              )}
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  })}
+
+
+
+    </div>
+          </div>
+        </div>
       </div>
     </div>
   );
