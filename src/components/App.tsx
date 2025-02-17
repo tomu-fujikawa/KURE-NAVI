@@ -1172,8 +1172,7 @@ const filteredChoices = useMemo(() => {
                 .slice(0, CARDS_PER_ROW * visibleRows)
                 .map((item: Destination) => (
                   <Draggable key={item.location_name} id={item.location_name} hoverItem={hoveredLocation || undefined} cardTitle={item.location_name}>
-                    {/* <div style={{width:"100%",height:"100%",backgroundColor:"red"}}>aaaaaaa</div> */}
-                    {/* {
+                    {
                     isDragging &&hoveredLocation === item.location_name && 
                     <div style={{width:"150%",height:"150%", position:"absolute",top:"-50px",left:"-50px",display:isDragging &&hoveredLocation === item.location_name ? "block" : "none"}}>
                       <div style={{width:"100%",height:"100%",position:"relative",zIndex:"0"}}>
@@ -1214,7 +1213,7 @@ const filteredChoices = useMemo(() => {
                       }}></img>
                       </div>
                     </div>
-                    } */}
+                    }
                     <div 
                       style={{
                         ...styles.draggableItem as React.CSSProperties,
