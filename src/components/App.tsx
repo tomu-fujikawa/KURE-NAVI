@@ -905,11 +905,13 @@ const filteredChoices = useMemo(() => {
   // 探検をセットする関数
   const handleSetCourse = (course: Course) => {
     setSelectedCourse([course]);
+    alert("探検をセットしました！");
   };
 
   // 探検を解除する関数
   const handleClearCourse = (course: Course) => {
     setSelectedCourse([]);
+    alert("探検を解除しました！");
   };
 
   return (
