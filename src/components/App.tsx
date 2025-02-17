@@ -617,6 +617,27 @@ export default function Page() {
       height: '1.25rem',
       color: 'white',
     },
+    containerTag: {
+      display: 'flex',
+      gap: '0.5rem',
+      flexWrap: 'wrap',
+      justifyContent: 'center',
+    },
+    tag: {
+      padding: '0.5rem 1rem',
+      borderRadius: '9999px',
+      fontSize: '0.875rem',
+      cursor: 'pointer',
+      transition: 'all 0.2s ease',
+    },
+    activeTag: {
+      backgroundColor: 'var(--kure-blue)',
+      color: 'white',
+    },
+    inactiveTag: {
+      backgroundColor: 'var(--kure-blue-light)',
+      color: 'var(--kure-blue)',
+    },
   };
 
 // フィルタリングロジックの更新
@@ -814,54 +835,6 @@ const filteredChoices = useMemo(() => {
   )
 
 
-  const TagFilter = () => {
-    const styles = {
-      container: {
-        display: 'flex',
-        gap: '0.5rem',
-        flexWrap: 'wrap',
-        justifyContent: 'center',
-      },
-      tag: {
-        padding: '0.5rem 1rem',
-        borderRadius: '9999px',
-        fontSize: '0.875rem',
-        cursor: 'pointer',
-        transition: 'all 0.2s ease',
-      },
-      activeTag: {
-        backgroundColor: 'var(--kure-blue)',
-        color: 'white',
-      },
-      inactiveTag: {
-        backgroundColor: 'var(--kure-blue-light)',
-        color: 'var(--kure-blue)',
-      },
-    };
-
-    return (
-      <div style={styles.container as React.CSSProperties}>
-        {AVAILABLE_TAGS.map((tag) => (
-          <button
-            key={tag}
-            onClick={() => {
-              setSelectedTags(prev =>
-                prev.includes(tag)
-                  ? prev.filter(t => t !== tag)
-                  : [...prev, tag]
-              );
-            }}
-            style={{
-              ...styles.tag,
-              ...(selectedTags.includes(tag) ? styles.activeTag : styles.inactiveTag),
-            }}
-          >
-            {tag}
-          </button>
-        ))}
-      </div>
-    );
-  };
 
   // ボタンのクリックハンドラー
   const handleShowMore = () => {
@@ -1126,7 +1099,27 @@ const filteredChoices = useMemo(() => {
                 {/* フィルターと検索のコンテナ */}
       <div style={styles.filterContainer}>
         {/* タグフィルター */}
-        <TagFilter />
+        {/* <TagFilter /> */}
+        <div style={styles.containerTag as React.CSSProperties}>
+        {AVAILABLE_TAGS.map((tag) => (
+          <button
+            key={tag}
+            onClick={() => {
+              setSelectedTags(prev =>
+                prev.includes(tag)
+                  ? prev.filter(t => t !== tag)
+                  : [...prev, tag]
+              );
+            }}
+            style={{
+              ...styles.tag,
+              ...(selectedTags.includes(tag) ? styles.activeTag : styles.inactiveTag),
+            }}
+          >
+            {tag}
+          </button>
+        ))}
+      </div>
         
         {/* 検索欄 */}
         <div style={styles.searchContainer as React.CSSProperties}>
@@ -1180,9 +1173,9 @@ const filteredChoices = useMemo(() => {
                 .map((item: Destination) => (
                   <Draggable key={item.location_name} id={item.location_name} hoverItem={hoveredLocation || undefined} cardTitle={item.location_name}>
                     {/* <div style={{width:"100%",height:"100%",backgroundColor:"red"}}>aaaaaaa</div> */}
-                    {
+                    {/* {
                     isDragging &&hoveredLocation === item.location_name && 
-                    <div style={{width:"150%",height:"150%", position:"absolute",top:"-50px",left:"-50px"}}>
+                    <div style={{width:"150%",height:"150%", position:"absolute",top:"-50px",left:"-50px",display:isDragging &&hoveredLocation === item.location_name ? "block" : "none"}}>
                       <div style={{width:"100%",height:"100%",position:"relative",zIndex:"0"}}>
                       <img src="./kurekun/png2/kurekun_body.png" style={{position:"absolute",top:"-50px",left:"0px",width:"300px",height:"350px",maxWidth:"300px"}}></img>
                       <img src="./kurekun/png2/kurekun_left_whiteEye.png" style={{position:"absolute",top:"-42px",left:"150px",width:"42px",height:"42px",maxWidth:"42px"}}></img>
@@ -1220,7 +1213,8 @@ const filteredChoices = useMemo(() => {
                         transition: "transform 1s linear", // スムーズな回転
                       }}></img>
                       </div>
-                    </div>}
+                    </div>
+                    } */}
                     <div 
                       style={{
                         ...styles.draggableItem as React.CSSProperties,
