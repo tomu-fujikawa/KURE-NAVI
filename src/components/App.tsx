@@ -1562,7 +1562,7 @@ const filteredChoices = useMemo(() => {
                 <div style={styles.searchContainer as React.CSSProperties}>
                   <input
                     type="text"
-                    placeholder="観光スポットを検索..."
+                    placeholder="探検地を検索..."
                     value={searchQueryYourSpot}
                     onChange={(e) => setSearchQueryYourSpot(e.target.value)}
                     style={styles.searchInput}
@@ -1797,7 +1797,7 @@ const filteredChoices = useMemo(() => {
                 <div style={styles.searchContainer as React.CSSProperties}>
                   <input
                     type="text"
-                    placeholder="観光スポットを検索..."
+                    placeholder="探検地を検索..."
                     value={searchQuerySpot}
                     onChange={(e) => setSearchQuerySpot(e.target.value)}
                     style={styles.searchInput}
