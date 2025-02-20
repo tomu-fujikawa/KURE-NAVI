@@ -13,6 +13,10 @@ import { collection, getDocs, addDoc } from "firebase/firestore";
 import { ChevronRight } from 'lucide-react'; // 矢印アイコンをインポート
 import React from 'react';
 import { useCallback } from 'react';
+import { gsap } from "gsap";
+import { ScrollTrigger } from "gsap/ScrollTrigger";
+
+gsap.registerPlugin(ScrollTrigger);
 
 
 interface data {
@@ -137,7 +141,6 @@ export default function Page() {
 
       fetchUsers();
     }, []);
-
 
 
 // アニメーション
@@ -673,6 +676,73 @@ const filteredChoices = useMemo(() => {
     return R * c;
   };
 
+  useEffect(() => {
+    // すべてのScrollTriggerを削除
+    ScrollTrigger.getAll().forEach(trigger => trigger.kill());
+    // 初期位置を y: 50 に設定
+  gsap.set(".kurekun1", { y: 50, opacity: 0 });
+  // ScrollTrigger で y: 0 にアニメーション
+  gsap.to(".kurekun1", {
+    y: 0,               // 元の位置に戻す
+    opacity: 1,         // 透明度も上げる
+    // duration: 0.8,      // 0.8秒で実行
+    // ease: "back.out(1.7)", // ひょこっと表示
+    scrollTrigger: {
+      trigger: ".kurekun1_trigger", // トリガー要素
+      start: "top 55%",        // 画面の80%の位置に来たら開始
+      end: "top 30%",
+      // markers: true,
+      scrub: true
+    },
+  });
+
+    // 初期位置を y: 50 に設定
+    gsap.set(".kurekun2", { y: 50, opacity: 0 });
+    // ScrollTrigger で y: 0 にアニメーション
+    gsap.to(".kurekun2", {
+      y: 0,               // 元の位置に戻す
+      opacity: 1,         // 透明度も上げる
+      scrollTrigger: {
+        trigger: ".kurekun2_trigger", // トリガー要素
+        start: "top 85%",        // 画面の80%の位置に来たら開始
+        end: "top 30%",
+        // markers: true,
+        scrub: true
+      },
+    });
+
+        // 初期位置を y: 50 に設定
+        gsap.set(".kurekun3", { y: 50, opacity: 0 });
+        // ScrollTrigger で y: 0 にアニメーション
+        gsap.to(".kurekun3", {
+          y: 0,               // 元の位置に戻す
+          opacity: 1,         // 透明度も上げる
+          scrollTrigger: {
+            trigger: ".kurekun3_trigger", // トリガー要素
+            start: "top 85%",        // 画面の80%の位置に来たら開始
+            end: "top 30%",
+            // markers: true,
+            scrub: true
+          },
+        });
+
+            // 初期位置を y: 50 に設定
+    gsap.set(".kurekun4", { y: 50, opacity: 0 });
+    // ScrollTrigger で y: 0 にアニメーション
+    gsap.to(".kurekun4", {
+      y: 0,               // 元の位置に戻す
+      opacity: 1,         // 透明度も上げる
+      scrollTrigger: {
+        trigger: ".kurekun4_trigger", // トリガー要素
+        start: "top 85%",        // 画面の80%の位置に来たら開始
+        end: "top 30%",
+        // markers: true,
+        scrub: true
+      },
+    });
+
+}, [filteredChoices,visibleRows]);
+
   // 🚀 各観光プランの合計距離を計算する関数
   const calculateTotalDistance = useCallback((destinations: data[]) => {
     if (!destinations || destinations.length < 2) return 0;
@@ -923,9 +993,8 @@ const filteredChoices = useMemo(() => {
       {/* <h2 style={{fontSize:"32px", fontWeight:"bold", color:"var(--kure-blue)", textAlign:"center", marginTop:"4px"}}>〜みんなで呉を探検しよう！〜</h2> */}
       </div>
       </div>
-
-        <div className="container-card">
-
+      <img className="kurekun1" src="./gsapkurekun2/1.png" style={{width:"20%",height:"20%",zIndex:"-1"}}></img>
+        <div className="container-card kurekun1_trigger">
         <div style={{display:"flex", flexDirection:"column", alignItems:"center",gap:"52px",justifyContent:"center"}}>
         <h3 style={{paddingLeft:"64px",fontSize:"24px", fontWeight:"bold", color:"var(--kure-blue-dark)", marginTop:"4px"}}>あなたの探検を作成しよう！</h3>
                 <div style={{display:"flex", flexDirection:"row", alignItems:"center",gap:"52px",justifyContent:"center"}}>
@@ -1343,8 +1412,8 @@ const filteredChoices = useMemo(() => {
         </div>
         </div>
 
- 
-        <div className="container-card">
+        <img className="kurekun2" src="./gsapkurekun2/2.png" style={{width:"20%",height:"20%",zIndex:"-1"}}></img>
+        <div className="container-card kurekun2_trigger">
           <div style={{ display: "flex", flexDirection: "column", marginTop: "12px" }}>
     <div style={styles.tagContainer as React.CSSProperties}>
       <div style={{ ...styles.tagTitleContainer as React.CSSProperties, paddingLeft: "6px" }}>
@@ -1524,8 +1593,8 @@ const filteredChoices = useMemo(() => {
           </div>
         </div>
 
-
-        <div className="container-card">
+        <img className="kurekun3" src="./gsapkurekun2/3.png" style={{width:"20%",height:"20%",zIndex:"-1"}}></img>
+        <div className="container-card kurekun3_trigger">
           <div style={{ display: "flex", flexDirection: "column", marginTop: "12px" }}>
     <div style={styles.tagContainer as React.CSSProperties}>
       <div style={{ ...styles.tagTitleContainer as React.CSSProperties, paddingLeft: "6px" }}>
@@ -1758,9 +1827,14 @@ const filteredChoices = useMemo(() => {
     </div>
           </div>
         </div>
-
-
-        <div className="container-card">
+        <div className="kurekun4" style={{display:"flex", flexDirection:"row", alignItems:"center",gap:"52px",width:"80%"}}>
+        <img src="./gsapkurekun2/4-1.png" style={{width:"20%",height:"20%",zIndex:"-1"}}></img>
+        <img src="./gsapkurekun2/4-2.png" style={{width:"20%",height:"20%",zIndex:"-1"}}></img>
+        <img src="./gsapkurekun2/4-3.png" style={{width:"20%",height:"20%",zIndex:"-1"}}></img>
+        <img src="./gsapkurekun2/4-4.png" style={{width:"20%",height:"20%",zIndex:"-1"}}></img>
+        <img src="./gsapkurekun2/4-5.png" style={{width:"20%",height:"20%",zIndex:"-1"}}></img>
+        </div>
+        <div className="container-card kurekun4_trigger">
           <div style={{ display: "flex", flexDirection: "column", marginTop: "12px" }}>
     <div style={styles.tagContainer as React.CSSProperties}>
       <div style={{ ...styles.tagTitleContainer as React.CSSProperties, paddingLeft: "6px" }}>
