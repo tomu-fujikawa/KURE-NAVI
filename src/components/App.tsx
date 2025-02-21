@@ -7,7 +7,7 @@ import { useState,useEffect, useMemo } from 'react';
 import Papa from "papaparse";
 import { Button } from './ui/button';
 import TimePickerContainer from './TimePickerContainer';
-import { Plus, Minus, PlusCircle, MinusCircle, Map } from 'lucide-react';
+import { Plus, Minus, PlusCircle, MinusCircle, Map, FileX } from 'lucide-react';
 import db from '../firebase';
 import { collection, getDocs, addDoc } from "firebase/firestore";  
 import { ChevronRight } from 'lucide-react'; // 矢印アイコンをインポート
@@ -984,6 +984,20 @@ const filteredChoices = useMemo(() => {
     alert("探検を解除しました！");
   };
 
+  // ルートをみる関数
+  const handleViewRoute = (course: Course) => {
+    // 緯度経度情報を取得
+    const waypoints = course.destinations.map(destination => {
+      return `${destination.latitude},${destination.longitude}`;
+    });
+
+    // Google MapsのURLを生成
+    const googleMapsUrl = `https://www.google.com/maps/dir/${waypoints.join('/')}/`;
+
+    // 新しいタブでGoogle Mapsを開く
+    window.open(googleMapsUrl, '_blank');
+  };
+
   return (
     <div style={styles.container}>
       <div style={styles.card} >
@@ -1436,7 +1450,7 @@ const filteredChoices = useMemo(() => {
             onClick={() => handleClearCourse(course)}
             style={{
               padding: "0.5rem 1rem",
-              backgroundColor: "var(--kure-blue)",
+              backgroundColor: "hsl(var(--primary))",
               color: "white",
               border: "none",
               borderRadius: "8px",
@@ -1679,12 +1693,13 @@ const filteredChoices = useMemo(() => {
 
     return (
       <div key={course.id} style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
-        <div style={{ display: "flex", alignItems: "center", gap: "1rem" }}>
+        <div style={{ display: "flex", alignItems: "flex-end", gap: "1rem" }}>
+          <div style={{display:"flex", flexDirection:"row", gap:"10px"}}>
           <button
-            onClick={() => handleSetCourse(course)}
+            onClick={() => handleSetCourse(course)} // この探検をセットボタン
             style={{
               padding: "0.5rem 1rem",
-              backgroundColor: "var(--kure-blue)",
+              backgroundColor: "hsl(var(--primary))",
               color: "white",
               border: "none",
               borderRadius: "8px",
@@ -1693,6 +1708,20 @@ const filteredChoices = useMemo(() => {
           >
             この探検をセット
           </button>
+          <button
+            onClick={() => handleViewRoute(course)} // ルートをみるボタン
+            style={{
+              padding: "0.5rem 1rem",
+              backgroundColor: "var(--kure-blue)", // ボタンの色を設定
+              color: "white",
+              border: "none",
+              borderRadius: "8px",
+              cursor: "pointer",
+            }}
+          >
+            探検ルートをみる
+          </button>
+          </div> 
           <h2 style={{ fontSize: "24px", fontWeight: "bold", color: "var(--kure-blue)" }}>
             {course.title} ({totalDistanceText})
           </h2>
@@ -1919,12 +1948,13 @@ const filteredChoices = useMemo(() => {
 
     return (
       <div key={course.id} style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
-        <div style={{ display: "flex", alignItems: "center", gap: "1rem" }}>
+        <div style={{ display: "flex", alignItems: "flex-end", gap: "1rem", }}>
+          <div style={{display:"flex", flexDirection:"row", gap:"10px"}}>
           <button
-            onClick={() => handleSetCourse(course)}
+            onClick={() => handleSetCourse(course)} // この探検をセットボタン
             style={{
               padding: "0.5rem 1rem",
-              backgroundColor: "var(--kure-blue)",
+              backgroundColor: "hsl(var(--primary))",
               color: "white",
               border: "none",
               borderRadius: "8px",
@@ -1933,6 +1963,20 @@ const filteredChoices = useMemo(() => {
           >
             この探検をセット
           </button>
+          <button
+            onClick={() => handleViewRoute(course)} // ルートをみるボタン
+            style={{
+              padding: "0.5rem 1rem",
+              backgroundColor: "var(--kure-blue)", // ボタンの色を設定
+              color: "white",
+              border: "none",
+              borderRadius: "8px",
+              cursor: "pointer",
+            }}
+          >
+            探検ルートをみる
+          </button>
+          </div>
           <h2 style={{ fontSize: "24px", fontWeight: "bold", color: "var(--kure-blue)" }}>
             {course.title} ({totalDistanceText})
           </h2>
