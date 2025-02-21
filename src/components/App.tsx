@@ -677,6 +677,62 @@ const filteredChoices = useMemo(() => {
     return R * c;
   };
 
+
+  // 🚀 各観光プランの合計距離を計算する関数
+  const calculateTotalDistance = useCallback((destinations: data[]) => {
+    if (!destinations || destinations.length < 2) return 0;
+    let totalDistance = 0;
+    for (let i = 0; i < destinations.length - 1; i++) {
+      totalDistance += calculateDistance(
+        destinations[i].latitude,
+        destinations[i].longitude,
+        destinations[i + 1].latitude,
+        destinations[i + 1].longitude
+      );
+    }
+    return totalDistance;
+  }, []);
+  
+  const filteredMyTravelCourses = useMemo(() => {
+    return myTravelCourses
+      .filter((course) => {
+        // 距離フィルター
+        const distanceFilter = calculateTotalDistance(course.destinations) <= maxTotalYourDistance;
+        
+        // コースタイトルフィルター
+        const titleFilter = !searchQueryYourCourse || 
+          course.title.toLowerCase().includes(searchQueryYourCourse.toLowerCase());
+        
+        // 観光スポットフィルター
+        const spotFilter = !searchQueryYourSpot || 
+          course.destinations.some(spot => 
+            spot.location_name.toLowerCase().includes(searchQueryYourSpot.toLowerCase())
+          );
+
+        return distanceFilter && titleFilter && spotFilter;
+      });
+  }, [myTravelCourses, maxTotalYourDistance, calculateTotalDistance, searchQueryYourCourse, searchQueryYourSpot]);
+
+  const filteredSightseeingCourse = useMemo(() => {
+    return sightseeingCourse
+      .filter((course) => {
+        // 距離フィルター
+        const distanceFilter = calculateTotalDistance(course.destinations) <= maxTotalDistance;
+        
+        // コースタイトルフィルター
+        const titleFilter = !searchQueryCourse || 
+          course.title.toLowerCase().includes(searchQueryCourse.toLowerCase());
+        
+        // 観光スポットフィルター
+        const spotFilter = !searchQuerySpot || 
+          course.destinations.some(spot => 
+            spot.location_name.toLowerCase().includes(searchQuerySpot.toLowerCase())
+          );
+
+        return distanceFilter && titleFilter && spotFilter;
+      });
+  }, [sightseeingCourse, maxTotalDistance, calculateTotalDistance, searchQueryCourse, searchQuerySpot]);
+
   useEffect(() => {
     // すべてのScrollTriggerを削除
     ScrollTrigger.getAll().forEach(trigger => trigger.kill());
@@ -742,63 +798,7 @@ const filteredChoices = useMemo(() => {
       },
     });
 
-}, [filteredChoices,visibleRows]);
-
-  // 🚀 各観光プランの合計距離を計算する関数
-  const calculateTotalDistance = useCallback((destinations: data[]) => {
-    if (!destinations || destinations.length < 2) return 0;
-    let totalDistance = 0;
-    for (let i = 0; i < destinations.length - 1; i++) {
-      totalDistance += calculateDistance(
-        destinations[i].latitude,
-        destinations[i].longitude,
-        destinations[i + 1].latitude,
-        destinations[i + 1].longitude
-      );
-    }
-    return totalDistance;
-  }, []);
-  
-  const filteredMyTravelCourses = useMemo(() => {
-    return myTravelCourses
-      .filter((course) => {
-        // 距離フィルター
-        const distanceFilter = calculateTotalDistance(course.destinations) <= maxTotalYourDistance;
-        
-        // コースタイトルフィルター
-        const titleFilter = !searchQueryYourCourse || 
-          course.title.toLowerCase().includes(searchQueryYourCourse.toLowerCase());
-        
-        // 観光スポットフィルター
-        const spotFilter = !searchQueryYourSpot || 
-          course.destinations.some(spot => 
-            spot.location_name.toLowerCase().includes(searchQueryYourSpot.toLowerCase())
-          );
-
-        return distanceFilter && titleFilter && spotFilter;
-      });
-  }, [myTravelCourses, maxTotalYourDistance, calculateTotalDistance, searchQueryYourCourse, searchQueryYourSpot]);
-
-  const filteredSightseeingCourse = useMemo(() => {
-    return sightseeingCourse
-      .filter((course) => {
-        // 距離フィルター
-        const distanceFilter = calculateTotalDistance(course.destinations) <= maxTotalDistance;
-        
-        // コースタイトルフィルター
-        const titleFilter = !searchQueryCourse || 
-          course.title.toLowerCase().includes(searchQueryCourse.toLowerCase());
-        
-        // 観光スポットフィルター
-        const spotFilter = !searchQuerySpot || 
-          course.destinations.some(spot => 
-            spot.location_name.toLowerCase().includes(searchQuerySpot.toLowerCase())
-          );
-
-        return distanceFilter && titleFilter && spotFilter;
-      });
-  }, [sightseeingCourse, maxTotalDistance, calculateTotalDistance, searchQueryCourse, searchQuerySpot]);
-
+}, [filteredChoices,visibleRows,filteredMyTravelCourses,selectedCourse]);
 
   // アルファベットのIDを生成する関数を追加
   const generateAlphabetId = (index: number): string => {
