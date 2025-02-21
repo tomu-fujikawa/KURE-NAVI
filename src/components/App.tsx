@@ -15,6 +15,7 @@ import React from 'react';
 import { useCallback } from 'react';
 import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
+import { relative } from 'path';
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -689,7 +690,7 @@ const filteredChoices = useMemo(() => {
     // ease: "back.out(1.7)", // ひょこっと表示
     scrollTrigger: {
       trigger: ".kurekun1_trigger", // トリガー要素
-      start: "top 55%",        // 画面の80%の位置に来たら開始
+      start: "top 40%",        // 画面の80%の位置に来たら開始
       end: "top 30%",
       // markers: true,
       scrub: true
@@ -1001,16 +1002,16 @@ const filteredChoices = useMemo(() => {
   return (
     <div style={styles.container}>
       <div style={styles.card} >
-      <div style={{display:"flex", flexDirection:"column", alignItems:"center",justifyContent:"center",width:"100%",marginBottom:"128px"}}>
-      <div className="container-card-title">
+      <div style={{display:"flex", flexDirection:"column", alignItems:"center",justifyContent:"center",width:"100%",marginBottom:"48px"}}>
+      <div className="container-card-title" style={{display:"flex", flexDirection:"row", gap:"40px", padding:"0 60px 0 0"}}>
+      <img src="gif/walk_kureshi.gif" alt="Animated Image" style={{width:"200px"}}/>
       <h1 style={styles.title as React.CSSProperties}>KURE-Navi</h1>
-      {/* <h2 style={{fontSize:"32px", fontWeight:"bold", color:"var(--kure-blue)", textAlign:"center", marginTop:"4px"}}>〜みんなで呉を探検しよう！〜</h2> */}
       </div>
       </div>
       <img className="kurekun1" src="./gsapkurekun2/1.png" style={{width:"20%",height:"20%",zIndex:"-1"}}></img>
         <div className="container-card kurekun1_trigger">
         <div style={{display:"flex", flexDirection:"column", alignItems:"center",gap:"52px",justifyContent:"center"}}>
-        <h3 style={{paddingLeft:"64px",fontSize:"24px", fontWeight:"bold", color:"var(--kure-blue-dark)", marginTop:"4px"}}>あなたの探検を作成しよう！</h3>
+        <h3 style={{fontSize:"36px", fontWeight:"bold", color:"var(--kure-blue-dark)", marginTop:"12px",marginBottom:"16px"}}>あなたの探検を作成しよう！</h3>
                 <div style={{display:"flex", flexDirection:"row", alignItems:"center",gap:"52px",justifyContent:"center"}}>
           <div style={{display:"flex", flexDirection:"row", alignItems:"center",gap:"40px", paddingLeft:"16px"}}>
                     {/* 🔍 タイトル入力欄 */}
