@@ -349,7 +349,7 @@ export default function Page() {
       color: 'var(--kure-navy)',
       marginBottom: '12px',
       textAlign: 'center',
-      marginTop: '24px',  
+      margin:0,
     },
     buttonContainer: {
       display: 'flex',
@@ -1003,7 +1003,7 @@ const filteredChoices = useMemo(() => {
     <div style={styles.container}>
       <div style={styles.card} >
       <div style={{display:"flex", flexDirection:"column", alignItems:"center",justifyContent:"center",width:"100%",marginBottom:"48px"}}>
-      <div className="container-card-title" style={{display:"flex", flexDirection:"row", gap:"40px", padding:"0 60px 0 0"}}>
+      <div className="container-card-title" style={{display:"flex", flexDirection:"row", gap:"40px", padding:"0 80px 0 0"}}>
       <img src="gif/walk_kureshi.gif" alt="Animated Image" style={{width:"200px"}}/>
       <h1 style={styles.title as React.CSSProperties}>KURE-Navi</h1>
       </div>
