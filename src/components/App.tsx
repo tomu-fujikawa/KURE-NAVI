@@ -15,7 +15,6 @@ import React from 'react';
 import { useCallback } from 'react';
 import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
-import { relative } from 'path';
 import WeatherWidget from './Weather_forecast';
 
 gsap.registerPlugin(ScrollTrigger);
@@ -112,6 +111,8 @@ export default function Page() {
     const [leftFootDirection, setLeftFootDirection] = useState(-1); // 1: 時計回り, -1: 反時計回り
   
     const [selectedCourse, setSelectedCourse] = useState<Course[]>([]); // セットした探検用のstate
+    const [myTravelAscendingOrder, setMyTravelAscendingOrder] = useState<boolean>(true);
+    const [sightseeingAscendingOrder, setSightseeingAscendingOrder] = useState<boolean>(true);
 
     useEffect(() => {
       fetch("/locations4.csv")
@@ -1000,6 +1001,70 @@ const filteredChoices = useMemo(() => {
     window.open(googleMapsUrl, '_blank');
   };
 
+  // // あなたの探検を距離でソート
+  // const sortedMyTravelCourses = filteredMyTravelCourses.sort((a, b) => {
+  //   return calculateTotalDistance(a.destinations) - calculateTotalDistance(b.destinations);
+  // });
+
+  // // みんなの探検を距離でソート
+  // const sortedSightseeingCourse = filteredSightseeingCourse.sort((a, b) => {
+  //   return calculateTotalDistance(a.destinations) - calculateTotalDistance(b.destinations);
+  // });
+
+//昇順にするための関数
+const handleMyTravelAscendingOrder = ()=>{
+  filteredSightseeingCourse.sort((a, b) => {
+    return calculateTotalDistance(a.destinations) - calculateTotalDistance(b.destinations);
+  })
+  setMyTravelAscendingOrder(true);
+};
+//降順にするための関数
+const handleMyTravelDescendingOrder = ()=>{
+  filteredSightseeingCourse.sort((a, b) => {
+    return  calculateTotalDistance(b.destinations) - calculateTotalDistance(a.destinations);
+  })
+  setMyTravelAscendingOrder(false);
+};
+
+  //昇順にするための関数
+  const handleSightseeingAscendingOrder = ()=>{
+    filteredSightseeingCourse.sort((a, b) => {
+      return calculateTotalDistance(a.destinations) - calculateTotalDistance(b.destinations);
+    })
+    setSightseeingAscendingOrder(true);
+  };
+  //降順にするための関数
+  const handleSightseeingDescendingOrder = ()=>{
+    filteredSightseeingCourse.sort((a, b) => {
+      return  calculateTotalDistance(b.destinations) - calculateTotalDistance(a.destinations);
+    })
+    setSightseeingAscendingOrder(false);
+  };
+// useMemo を使用してソート状態を維持
+const sortedFilteredSightseeingCourse = useMemo(() => {
+  const sortedCourses = [...filteredSightseeingCourse]; // 配列のコピーを作成（元の配列を変更しない）
+
+  if (sightseeingAscendingOrder) {
+    sortedCourses.sort((a, b) => calculateTotalDistance(a.destinations) - calculateTotalDistance(b.destinations));
+  } else {
+    sortedCourses.sort((a, b) => calculateTotalDistance(b.destinations) - calculateTotalDistance(a.destinations));
+  }
+
+  return sortedCourses;
+}, [filteredSightseeingCourse, sightseeingAscendingOrder]); // 依存関係にフィルタリング結果とソート状態を追加
+
+const sortedFilteredMyTravelCourses = useMemo(() => {
+  const sortedCourses = [...filteredMyTravelCourses]; // 配列のコピーを作成
+
+  if (myTravelAscendingOrder) {
+    sortedCourses.sort((a, b) => calculateTotalDistance(a.destinations) - calculateTotalDistance(b.destinations));
+  } else {
+    sortedCourses.sort((a, b) => calculateTotalDistance(b.destinations) - calculateTotalDistance(a.destinations));
+  }
+
+  return sortedCourses;
+}, [filteredMyTravelCourses, myTravelAscendingOrder]); // 依存関係にフィルタリング結果とソート状態を追加
+
   return (
     <div style={styles.container}>
       <WeatherWidget/>
@@ -1737,7 +1802,17 @@ const filteredChoices = useMemo(() => {
                 </div>
               </div>
               <div style={{ display: "flex", alignItems: "center", gap: "1rem", marginBottom: "10px" }}>
+              <div style={{display:"flex",alignItems:"center"}}> 
+                {myTravelAscendingOrder ?
+  <button onClick={handleMyTravelDescendingOrder}>
+   <img src="chevron-up.svg" />
+  </button>
+  :
+  <button onClick={handleMyTravelAscendingOrder}>
+  <img src="chevron-down.svg"/>
+  </button>}
     <label>最大合計距離 (km):</label>
+                </div>
     <input
       type="number"
       value={maxTotalYourDistance}
@@ -1753,12 +1828,11 @@ const filteredChoices = useMemo(() => {
       }}
     />
   </div>
-
     </div>
 
     {/* 各観光プランを縦に並べる */}
     <div style={{ display: "flex", flexDirection: "column", gap: "20px", marginTop:"20px",marginLeft:"24px",border:"4px solid var(--kure-blue)",borderRadius:"25px",padding:"12px" }}>
-    {filteredMyTravelCourses.map((course: Course, courseIndex: number) => {
+    {sortedFilteredMyTravelCourses.map((course: Course, courseIndex: number) => {
     const totalDistance = calculateTotalDistance(course.destinations); // 距離を計算
     const totalDistanceText = `${totalDistance.toFixed(1)} km`; // 🔥 km を追加
 
@@ -2022,29 +2096,38 @@ const filteredChoices = useMemo(() => {
                   </svg>
                 </div>
               </div>
-              <div style={{ display: "flex", alignItems: "center", gap: "1rem", marginBottom: "10px" }}>
+              <div style={{ display: "flex", alignItems: "center", gap: "1rem" }}>
+                <div style={{display:"flex",alignItems:"center"}}> 
+                {sightseeingAscendingOrder ?
+  <button onClick={handleSightseeingDescendingOrder}>
+   <img src="chevron-up.svg"/>
+  </button>
+  :
+  <button onClick={handleSightseeingAscendingOrder}>
+  <img src="chevron-down.svg"/>
+  </button>}
     <label>最大合計距離 (km):</label>
-    <input
-      type="number"
-      value={maxTotalDistance}
-      onChange={(e) => setMaxTotalDistance(Number(e.target.value))}
-      min="1"
-      max="100"
-      step="1"
-      style={{
-        width: "80px",
-        padding: "5px",
-        borderRadius: "5px",
-        border: "1px solid var(--kure-blue)",
-      }}
-    />
+                </div>
+        <input
+          type="number"
+          value={maxTotalDistance}
+          onChange={(e) => setMaxTotalDistance(Number(e.target.value))}
+          min="1"
+          max="100"
+          step="1"
+          style={{
+            width: "80px",
+            padding: "5px",
+            borderRadius: "5px",
+            border: "1px solid var(--kure-blue)",
+          }}
+        />
   </div>
-
     </div>
 
     {/* 各観光プランを縦に並べる */}
     <div style={{ display: "flex", flexDirection: "column", gap: "20px", marginTop:"20px",marginLeft:"24px",border:"4px solid var(--kure-blue)",borderRadius:"25px",padding:"12px"  }}>
-    {filteredSightseeingCourse.map((course: Course, courseIndex: number) => {
+    {sortedFilteredSightseeingCourse.map((course: Course, courseIndex: number) => {
     const totalDistance = calculateTotalDistance(course.destinations); // 距離を計算
     const totalDistanceText = `${totalDistance.toFixed(1)} km`; // 🔥 km を追加
 
@@ -2257,7 +2340,6 @@ const filteredChoices = useMemo(() => {
     </div>
           </div>
         </div>
-
 
 
       </div>
