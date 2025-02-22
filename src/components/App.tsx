@@ -1004,11 +1004,11 @@ const filteredChoices = useMemo(() => {
       <div style={styles.card} >
       <div style={{display:"flex", flexDirection:"column", alignItems:"center",justifyContent:"center",width:"100%",marginBottom:"48px"}}>
       <div className="container-card-title" style={{display:"flex", flexDirection:"row", gap:"40px", padding:"0 80px 0 0"}}>
-      <img src="gif/walk_kureshi.gif" alt="Animated Image" style={{width:"200px"}}/>
+      <img src="gif/walk_kureshi2.gif" alt="Animated Image" style={{width:"200px"}}/>
       <h1 style={styles.title as React.CSSProperties}>KURE-Navi</h1>
       </div>
       </div>
-      <img className="kurekun1" src="./gsapkurekun2/1.png" style={{width:"20%",height:"20%",zIndex:"-1"}}></img>
+      <img className="kurekun1" src="./gsapkurekun3/1.png" style={{width:"20%",height:"20%",zIndex:"-1"}}></img>
         <div className="container-card kurekun1_trigger">
         <div style={{display:"flex", flexDirection:"column", alignItems:"center",gap:"52px",justifyContent:"center"}}>
         <h3 style={{fontSize:"36px", fontWeight:"bold", color:"var(--kure-blue-dark)", marginTop:"12px",marginBottom:"16px"}}>あなたの探検を作成しよう！</h3>
@@ -1262,37 +1262,43 @@ const filteredChoices = useMemo(() => {
                     isDragging &&hoveredLocation === item.location_name && 
                     <div style={{width:"150%",height:"150%", position:"absolute",top:"-50px",left:"-50px",display:isDragging &&hoveredLocation === item.location_name ? "block" : "none"}}>
                       <div style={{width:"100%",height:"100%",position:"relative",zIndex:"0"}}>
-                      <img src="./kurekun/png2/kurekun_body.png" style={{position:"absolute",top:"-50px",left:"0px",width:"300px",height:"350px",maxWidth:"300px"}}></img>
-                      <img src="./kurekun/png2/kurekun_left_whiteEye.png" style={{position:"absolute",top:"-42px",left:"150px",width:"42px",height:"42px",maxWidth:"42px"}}></img>
+                      <img src="./kurekun/png4/kurekun_body.png" style={{position:"absolute",top:"-70px",left:"0px",width:"300px",height:"350px",maxWidth:"300px"}}></img>
+                      
+                      
+                      {/* 目玉 */}
+                      <img src="./kurekun/png4/kurekun_left_whiteEye.png" style={{position:"absolute",top:"-42px",left:"150px",width:"42px",height:"42px",maxWidth:"42px"}}></img>
                       <div style={{position:"absolute",top:"-42px",left:"150px",width:"42px",height:"42px",maxWidth:"42px"}}>
-                        <img src="./kurekun/png2/kurekun_left_blueEye.png" style={{position:"absolute",top:"10px",
+                        <img src="./kurekun/png4/kurekun_left_blueEye.png" style={{position:"absolute",top:"10px",
                         left: `${eyeMove}px`, // leftを動的に変更
                         transition: "left 0.1s linear" // スムーズな動き
                           ,width:"26px",height:"26px",maxWidth:"26px"}}></img>
                       </div>
-                      <img src="./kurekun/png2/kurekun_right_whiteEye.png" style={{position:"absolute",top:"-42px",left:"190px",width:"42px",height:"42px",maxWidth:"42px"}}></img>
+                      <img src="./kurekun/png4/kurekun_right_whiteEye.png" style={{position:"absolute",top:"-42px",left:"190px",width:"42px",height:"42px",maxWidth:"42px"}}></img>
                       <div style={{position:"absolute",top:"-42px",left:"190px",width:"26px",height:"26px",maxWidth:"26px"}}>
-                      <img src="./kurekun/png2/kurekun_right_blueEye.png" style={{position:"absolute",top:"10px",
+                      <img src="./kurekun/png4/kurekun_right_blueEye.png" style={{position:"absolute",top:"10px",
                         left: `${eyeMove}px`, // leftを動的に変更
                         transition: "left 0.1s linear" // スムーズな動き
                         ,width:"26px",height:"26px",maxWidth:"26px"}}></img>
                       </div>
-                      <img src="./kurekun/png2/kurekun_left_hand.png" style={{position:"absolute",top:"80px",left:"-120px",width:"163px",height:"145px",maxWidth:"163px",
+                      {/* 目玉 */}
+
+
+                      <img src="./kurekun/png4/kurekun_left_hand.png" style={{position:"absolute",top:"80px",left:"-120px",width:"163px",height:"145px",maxWidth:"163px",
                         transform: `rotate(${leftHandAngle}deg)`, // 回転を適用
                         transformOrigin: "right center", // 右端を回転の中心にする
                         transition: "transform 2s linear", // スムーズな回転
                       }}></img>
-                      <img src="./kurekun/png2/kurekun_right_hand.png" style={{position:"absolute",top:"80px",right:"-120px",width:"163px",height:"145px",maxWidth:"163px",
+                      <img src="./kurekun/png4/kurekun_right_hand.png" style={{position:"absolute",top:"80px",right:"-120px",width:"163px",height:"145px",maxWidth:"163px",
                                 transform: `rotate(${rightHandAngle}deg)`, // 回転を適用
                                 transformOrigin: "left center", // 左端を回転の中心にする
                                 transition: "transform 2s linear", // スムーズな回転
                       }}></img>
-                      <img src="./kurekun/png2/kurekun_left_foot.png" style={{position:"absolute",top:"240px",left:"-30px",width:"177px",height:"169px",maxWidth:"177px",
+                      <img src="./kurekun/png4/kurekun_left_foot.png" style={{position:"absolute",top:"240px",left:"-30px",width:"177px",height:"169px",maxWidth:"177px",
                         transform: `rotate(${leftFootAngle}deg)`, // 回転を適用
                         transformOrigin: "top center", // 左端を回転の中心にする
                         transition: "transform 1s linear", // スムーズな回転
                       }}></img>
-                      <img src="./kurekun/png2/kurekun_right_foot.png" style={{position:"absolute",top:"240px",right:"-30px",width:"177px",height:"169px",maxWidth:"177px",
+                      <img src="./kurekun/png4/kurekun_right_foot.png" style={{position:"absolute",top:"240px",right:"-30px",width:"177px",height:"169px",maxWidth:"177px",
                         transform: `rotate(${rightFootAngle}deg)`, // 回転を適用
                         transformOrigin: "top center", // 左端を回転の中心にする
                         transition: "transform 1s linear", // スムーズな回転
@@ -1427,7 +1433,7 @@ const filteredChoices = useMemo(() => {
         </div>
         </div>
 
-        <img className="kurekun2" src="./gsapkurekun2/2.png" style={{width:"20%",height:"20%",zIndex:"-1"}}></img>
+        <img className="kurekun2" src="./gsapkurekun3/2.png" style={{width:"20%",height:"20%",zIndex:"-1"}}></img>
         <div className="container-card kurekun2_trigger">
           <div style={{ display: "flex", flexDirection: "column", marginTop: "12px" }}>
     <div style={styles.tagContainer as React.CSSProperties}>
@@ -1608,7 +1614,7 @@ const filteredChoices = useMemo(() => {
           </div>
         </div>
 
-        <img className="kurekun3" src="./gsapkurekun2/3.png" style={{width:"20%",height:"20%",zIndex:"-1"}}></img>
+        <img className="kurekun3" src="./gsapkurekun3/3.png" style={{width:"20%",height:"20%",zIndex:"-1"}}></img>
         <div className="container-card kurekun3_trigger">
           <div style={{ display: "flex", flexDirection: "column", marginTop: "12px" }}>
     <div style={styles.tagContainer as React.CSSProperties}>
@@ -1858,11 +1864,11 @@ const filteredChoices = useMemo(() => {
           </div>
         </div>
         <div className="kurekun4" style={{display:"flex", flexDirection:"row", alignItems:"center",gap:"52px",width:"80%"}}>
-        <img src="./gsapkurekun2/4-1.png" style={{width:"20%",height:"20%",zIndex:"-1"}}></img>
-        <img src="./gsapkurekun2/4-2.png" style={{width:"20%",height:"20%",zIndex:"-1"}}></img>
-        <img src="./gsapkurekun2/4-3.png" style={{width:"20%",height:"20%",zIndex:"-1"}}></img>
-        <img src="./gsapkurekun2/4-4.png" style={{width:"20%",height:"20%",zIndex:"-1"}}></img>
-        <img src="./gsapkurekun2/4-5.png" style={{width:"20%",height:"20%",zIndex:"-1"}}></img>
+        <img src="./gsapkurekun3/4-1.png" style={{width:"20%",height:"20%",zIndex:"-1"}}></img>
+        <img src="./gsapkurekun3/4-2.png" style={{width:"20%",height:"20%",zIndex:"-1"}}></img>
+        <img src="./gsapkurekun3/4-3.png" style={{width:"20%",height:"20%",zIndex:"-1"}}></img>
+        <img src="./gsapkurekun3/4-4.png" style={{width:"20%",height:"20%",zIndex:"-1"}}></img>
+        <img src="./gsapkurekun3/4-5.png" style={{width:"20%",height:"20%",zIndex:"-1"}}></img>
         </div>
         <div className="container-card kurekun4_trigger">
           <div style={{ display: "flex", flexDirection: "column", marginTop: "12px" }}>
