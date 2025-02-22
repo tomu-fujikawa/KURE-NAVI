@@ -41,14 +41,14 @@ body {
 }
 
 .draggable-item {
-  background: var(--kure-blue);
+  background: #4db2cd;
   color: white;
   border-radius: 0.5rem;
   transition: all 0.3s ease;
 }
 
 .draggable-item:hover {
-  background: var(--kure-blue-dark);
+  background: #1EB0D9;
   transform: translateY(-2px);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }
