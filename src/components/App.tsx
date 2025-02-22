@@ -1315,6 +1315,7 @@ const filteredChoices = useMemo(() => {
                         // transform: hoveredLocation === item.location_name ? 'scale(1.5)' : 'scale(1.5)', // ホバー時に拡大
                         transition: 'transform 0.4s ease',
                         zIndex: hoveredLocation === item.location_name ? 1000 : 1,
+                        boxShadow: isDragging &&hoveredLocation === item.location_name ? "none" : "0 4px 12px rgba(0, 0, 0, 0.1)"
                       }} 
                       className="draggable-item"
                       onMouseEnter={() => handleItemHover(item as data)} // ホバー時の処理
