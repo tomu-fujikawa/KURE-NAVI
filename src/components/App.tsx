@@ -16,6 +16,7 @@ import { useCallback } from 'react';
 import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { relative } from 'path';
+import WeatherWidget from './Weather_forecast';
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -1001,6 +1002,7 @@ const filteredChoices = useMemo(() => {
 
   return (
     <div style={styles.container}>
+      <WeatherWidget/>
       <div style={styles.card} >
       <div style={{display:"flex", flexDirection:"column", alignItems:"center",justifyContent:"center",width:"100%",marginBottom:"48px"}}>
       <div className="container-card-title" style={{display:"flex", flexDirection:"row", gap:"40px", padding:"0 80px 0 0"}}>
