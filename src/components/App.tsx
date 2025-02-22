@@ -1014,7 +1014,7 @@ const filteredChoices = useMemo(() => {
         <div className="container-card kurekun1_trigger">
         <div style={{display:"flex", flexDirection:"column", alignItems:"center",gap:"52px",justifyContent:"center"}}>
         <h3 style={{fontSize:"36px", fontWeight:"bold", color:"var(--kure-blue-dark)", marginTop:"12px",marginBottom:"16px"}}>あなたの探検を作成しよう！</h3>
-                <div style={{display:"flex", flexDirection:"row", alignItems:"center",gap:"52px",justifyContent:"center"}}>
+                <div style={{display:"flex", flexDirection:"row", alignItems:"flex-end",gap:"52px",justifyContent:"center"}}>
           <div style={{display:"flex", flexDirection:"row", alignItems:"center",gap:"40px", paddingLeft:"16px"}}>
                     {/* 🔍 タイトル入力欄 */}
             <input
@@ -1042,19 +1042,36 @@ const filteredChoices = useMemo(() => {
               </Button>
             </div>
           </div>
-          <Button 
+
+          <button
             onClick={handleAddCourse}
             style={{
-              padding: "0.5rem 1rem",
-              borderRadius: "8px",
+              width:"190px",
+              height:"100px",
+              padding: "12px 24px",
+              background: "linear-gradient(135deg, #000722, #4b4d4f)", // グラデーション
+              color: "white",
               border: "none",
-              outline: "none",
-              width: "200px",
-              height: "100px",
+              borderRadius: "12px",
+              fontSize: "16px",
+              fontWeight: "bold",
+              cursor: "pointer",
+              transition: "transform 0.2s ease",
+              // boxShadow: "0px 6px 12px rgba(51, 0, 255, 0.3)", // 立体感
             }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.transform = "scale(1.05)";
+              // e.currentTarget.style.boxShadow = "0px 8px 16px rgba(51, 0, 255, 0, 0.5)";
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.transform = "scale(1)";
+              // e.currentTarget.style.boxShadow = "0px 6px 12px rgba(51, 0, 255, 0.3)";
+            }}
+            onMouseDown={(e) => (e.currentTarget.style.transform = "scale(0.95)")}
+            onMouseUp={(e) => (e.currentTarget.style.transform = "scale(1.05)")}
           >
             探検を登録
-          </Button>
+          </button>
         </div>
         </div>
         <DndContext onDragEnd={handleDragEnd} onDragStart={handleDragStart}>
@@ -1456,19 +1473,63 @@ const filteredChoices = useMemo(() => {
     return (
       <div key={course.id} style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
         <div style={{ display: "flex", alignItems: "center", gap: "1rem" }}>
-          <button
+        <div style={{ display: "flex", flexDirection: "row", gap: "10px" }}>
+        <button
             onClick={() => handleClearCourse(course)}
             style={{
-              padding: "0.5rem 1rem",
-              backgroundColor: "hsl(var(--primary))",
+              padding: "12px 24px",
+              background: "linear-gradient(135deg, #000722, #4b4d4f)", // グラデーション
               color: "white",
               border: "none",
-              borderRadius: "8px",
+              borderRadius: "12px",
+              fontSize: "16px",
+              fontWeight: "bold",
               cursor: "pointer",
+              transition: "transform 0.2s ease",
+              boxShadow: "0px 6px 12px rgba(19, 9, 57, 0.3)", // 立体感
             }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.transform = "scale(1.05)";
+              e.currentTarget.style.boxShadow = "0px 8px 16px rgba(19, 9, 57, 0, 0.5)";
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.transform = "scale(1)";
+              e.currentTarget.style.boxShadow = "0px 6px 12px rgba(19, 9, 57, 0.3)";
+            }}
+            onMouseDown={(e) => (e.currentTarget.style.transform = "scale(0.95)")}
+            onMouseUp={(e) => (e.currentTarget.style.transform = "scale(1.05)")}
           >
             この探検を解除
           </button>
+            {/* 🔵 探検ルートを見る ボタン */}
+          <button
+            onClick={() => handleViewRoute(course)}
+            style={{
+              padding: "12px 24px",
+              background: "linear-gradient(135deg, #007BFF, #00A8FF)", // グラデーション
+              color: "white",
+              border: "none",
+              borderRadius: "12px",
+              fontSize: "16px",
+              fontWeight: "bold",
+              cursor: "pointer",
+              transition: "transform 0.2s ease, box-shadow 0.2s ease",
+              boxShadow: "0px 6px 12px rgba(0, 123, 255, 0.3)", // 立体感
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.transform = "scale(1.05)";
+              e.currentTarget.style.boxShadow = "0px 8px 16px rgba(0, 123, 255, 0.5)";
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.transform = "scale(1)";
+              e.currentTarget.style.boxShadow = "0px 6px 12px rgba(0, 123, 255, 0.3)";
+            }}
+            onMouseDown={(e) => (e.currentTarget.style.transform = "scale(0.95)")}
+            onMouseUp={(e) => (e.currentTarget.style.transform = "scale(1.05)")}
+          >
+            探検ルートを見る
+          </button>
+        </div>
           <h2 style={{ fontSize: "24px", fontWeight: "bold", color: "var(--kure-blue)" }}>
             {course.title} ({totalDistanceText})
           </h2>
@@ -1704,34 +1765,65 @@ const filteredChoices = useMemo(() => {
     return (
       <div key={course.id} style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
         <div style={{ display: "flex", alignItems: "flex-end", gap: "1rem" }}>
-          <div style={{display:"flex", flexDirection:"row", gap:"10px"}}>
-          <button
-            onClick={() => handleSetCourse(course)} // この探検をセットボタン
-            style={{
-              padding: "0.5rem 1rem",
-              backgroundColor: "hsl(var(--primary))",
-              color: "white",
-              border: "none",
-              borderRadius: "8px",
-              cursor: "pointer",
-            }}
-          >
-            この探検をセット
-          </button>
-          <button
-            onClick={() => handleViewRoute(course)} // ルートをみるボタン
-            style={{
-              padding: "0.5rem 1rem",
-              backgroundColor: "var(--kure-blue)", // ボタンの色を設定
-              color: "white",
-              border: "none",
-              borderRadius: "8px",
-              cursor: "pointer",
-            }}
-          >
-            探検ルートをみる
-          </button>
-          </div> 
+        <div style={{ display: "flex", flexDirection: "row", gap: "10px" }}>
+  {/* 🔥 探検をセット ボタン */}
+  <button
+    onClick={() => handleSetCourse(course)}
+    style={{
+      padding: "12px 24px",
+      background: "linear-gradient(135deg, #FF8C00, #FF6347)", // グラデーション
+      color: "white",
+      border: "none",
+      borderRadius: "12px",
+      fontSize: "16px",
+      fontWeight: "bold",
+      cursor: "pointer",
+      transition: "transform 0.2s ease, box-shadow 0.2s ease",
+      boxShadow: "0px 6px 12px rgba(255, 140, 0, 0.3)", // 立体感
+    }}
+    onMouseEnter={(e) => {
+      e.currentTarget.style.transform = "scale(1.05)";
+      e.currentTarget.style.boxShadow = "0px 8px 16px rgba(255, 140, 0, 0.5)";
+    }}
+    onMouseLeave={(e) => {
+      e.currentTarget.style.transform = "scale(1)";
+      e.currentTarget.style.boxShadow = "0px 6px 12px rgba(255, 140, 0, 0.3)";
+    }}
+    onMouseDown={(e) => (e.currentTarget.style.transform = "scale(0.95)")}
+    onMouseUp={(e) => (e.currentTarget.style.transform = "scale(1.05)")}
+  >
+    この探検をセット
+  </button>
+
+  {/* 🔵 探検ルートを見る ボタン */}
+  <button
+    onClick={() => handleViewRoute(course)}
+    style={{
+      padding: "12px 24px",
+      background: "linear-gradient(135deg, #007BFF, #00A8FF)", // グラデーション
+      color: "white",
+      border: "none",
+      borderRadius: "12px",
+      fontSize: "16px",
+      fontWeight: "bold",
+      cursor: "pointer",
+      transition: "transform 0.2s ease, box-shadow 0.2s ease",
+      boxShadow: "0px 6px 12px rgba(0, 123, 255, 0.3)", // 立体感
+    }}
+    onMouseEnter={(e) => {
+      e.currentTarget.style.transform = "scale(1.05)";
+      e.currentTarget.style.boxShadow = "0px 8px 16px rgba(0, 123, 255, 0.5)";
+    }}
+    onMouseLeave={(e) => {
+      e.currentTarget.style.transform = "scale(1)";
+      e.currentTarget.style.boxShadow = "0px 6px 12px rgba(0, 123, 255, 0.3)";
+    }}
+    onMouseDown={(e) => (e.currentTarget.style.transform = "scale(0.95)")}
+    onMouseUp={(e) => (e.currentTarget.style.transform = "scale(1.05)")}
+  >
+    探検ルートを見る
+  </button>
+</div>
           <h2 style={{ fontSize: "24px", fontWeight: "bold", color: "var(--kure-blue)" }}>
             {course.title} ({totalDistanceText})
           </h2>
@@ -1959,34 +2051,65 @@ const filteredChoices = useMemo(() => {
     return (
       <div key={course.id} style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
         <div style={{ display: "flex", alignItems: "flex-end", gap: "1rem", }}>
-          <div style={{display:"flex", flexDirection:"row", gap:"10px"}}>
-          <button
-            onClick={() => handleSetCourse(course)} // この探検をセットボタン
-            style={{
-              padding: "0.5rem 1rem",
-              backgroundColor: "hsl(var(--primary))",
-              color: "white",
-              border: "none",
-              borderRadius: "8px",
-              cursor: "pointer",
-            }}
-          >
-            この探検をセット
-          </button>
-          <button
-            onClick={() => handleViewRoute(course)} // ルートをみるボタン
-            style={{
-              padding: "0.5rem 1rem",
-              backgroundColor: "var(--kure-blue)", // ボタンの色を設定
-              color: "white",
-              border: "none",
-              borderRadius: "8px",
-              cursor: "pointer",
-            }}
-          >
-            探検ルートをみる
-          </button>
-          </div>
+        <div style={{ display: "flex", flexDirection: "row", gap: "10px" }}>
+  {/* 🔥 探検をセット ボタン */}
+  <button
+    onClick={() => handleSetCourse(course)}
+    style={{
+      padding: "12px 24px",
+      background: "linear-gradient(135deg, #FF8C00, #FF6347)", // グラデーション
+      color: "white",
+      border: "none",
+      borderRadius: "12px",
+      fontSize: "16px",
+      fontWeight: "bold",
+      cursor: "pointer",
+      transition: "transform 0.2s ease, box-shadow 0.2s ease",
+      boxShadow: "0px 6px 12px rgba(255, 140, 0, 0.3)", // 立体感
+    }}
+    onMouseEnter={(e) => {
+      e.currentTarget.style.transform = "scale(1.05)";
+      e.currentTarget.style.boxShadow = "0px 8px 16px rgba(255, 140, 0, 0.5)";
+    }}
+    onMouseLeave={(e) => {
+      e.currentTarget.style.transform = "scale(1)";
+      e.currentTarget.style.boxShadow = "0px 6px 12px rgba(255, 140, 0, 0.3)";
+    }}
+    onMouseDown={(e) => (e.currentTarget.style.transform = "scale(0.95)")}
+    onMouseUp={(e) => (e.currentTarget.style.transform = "scale(1.05)")}
+  >
+    この探検をセット
+  </button>
+
+  {/* 🔵 探検ルートを見る ボタン */}
+  <button
+    onClick={() => handleViewRoute(course)}
+    style={{
+      padding: "12px 24px",
+      background: "linear-gradient(135deg, #007BFF, #00A8FF)", // グラデーション
+      color: "white",
+      border: "none",
+      borderRadius: "12px",
+      fontSize: "16px",
+      fontWeight: "bold",
+      cursor: "pointer",
+      transition: "transform 0.2s ease, box-shadow 0.2s ease",
+      boxShadow: "0px 6px 12px rgba(0, 123, 255, 0.3)", // 立体感
+    }}
+    onMouseEnter={(e) => {
+      e.currentTarget.style.transform = "scale(1.05)";
+      e.currentTarget.style.boxShadow = "0px 8px 16px rgba(0, 123, 255, 0.5)";
+    }}
+    onMouseLeave={(e) => {
+      e.currentTarget.style.transform = "scale(1)";
+      e.currentTarget.style.boxShadow = "0px 6px 12px rgba(0, 123, 255, 0.3)";
+    }}
+    onMouseDown={(e) => (e.currentTarget.style.transform = "scale(0.95)")}
+    onMouseUp={(e) => (e.currentTarget.style.transform = "scale(1.05)")}
+  >
+    探検ルートを見る
+  </button>
+</div>
           <h2 style={{ fontSize: "24px", fontWeight: "bold", color: "var(--kure-blue)" }}>
             {course.title} ({totalDistanceText})
           </h2>

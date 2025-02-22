@@ -4,6 +4,7 @@ export default function WeatherWidget() {
   const [weatherData, setWeatherData] = useState<{ date: string, maxTemp: number, minTemp: number, weatherCode: number }[]>([]);
   const day = ["今日", "明日", "明後日"];
   const [isVisible, setIsVisible] = useState(false);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchWeather = async () => {
@@ -21,8 +22,10 @@ export default function WeatherWidget() {
         }));
 
         setWeatherData(forecast);
+        setLoading(false);
       } catch (error) {
         console.error("天気情報の取得に失敗しました", error);
+        setLoading(false);
       }
     };
 
@@ -98,9 +101,15 @@ export default function WeatherWidget() {
           </button>
 
           <h2 style={{ fontSize: "24px", marginBottom: "15px", fontWeight:"bold"}}>呉市の天気</h2>
-          
-          {/* 天気カードのコンテナ */}
-          <div style={{
+          {loading ? (<div style={{
+              fontSize: "16px",
+              fontWeight: "bold",
+              animation: "fade-in 1s infinite alternate"
+            }}>
+              🌍 データ取得中...
+            </div>
+          ) :
+          (       <div style={{
             display: "flex",
             flexDirection: "column",
             gap: "12px"
@@ -129,7 +138,8 @@ export default function WeatherWidget() {
                 </div>
               </div>
             ))}
-          </div>
+          </div>)
+          }
         </div>
       )}
     </div>
