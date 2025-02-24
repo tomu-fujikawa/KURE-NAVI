@@ -978,13 +978,13 @@ const filteredChoices = useMemo(() => {
   // 探検をセットする関数
   const handleSetCourse = (course: Course) => {
     setSelectedCourse([course]);
-    alert("探検をセットしました！");
+    alert("観光をセットしました！");
   };
 
   // 探検を解除する関数
   const handleClearCourse = (course: Course) => {
     setSelectedCourse([]);
-    alert("探検を解除しました！");
+    alert("観光を解除しました！");
   };
 
   // ルートをみる関数
@@ -1078,13 +1078,13 @@ const sortedFilteredMyTravelCourses = useMemo(() => {
       <img className="kurekun1" src="./gsapkurekun3/1.png" style={{width:"20%",height:"20%",zIndex:"-1"}}></img>
         <div className="container-card kurekun1_trigger">
         <div style={{display:"flex", flexDirection:"column", alignItems:"center",gap:"52px",justifyContent:"center"}}>
-        <h3 style={{fontSize:"36px", fontWeight:"bold", color:"var(--kure-blue-dark)", marginTop:"12px",marginBottom:"16px"}}>あなたの探検を作成しよう！</h3>
+        <h3 style={{fontSize:"36px", fontWeight:"bold", color:"var(--kure-blue-dark)", marginTop:"12px",marginBottom:"16px"}}>あなたの観光を作成しよう！</h3>
                 <div style={{display:"flex", flexDirection:"row", alignItems:"flex-end",gap:"52px",justifyContent:"center"}}>
           <div style={{display:"flex", flexDirection:"row", alignItems:"center",gap:"40px", paddingLeft:"16px"}}>
                     {/* 🔍 タイトル入力欄 */}
             <input
               type="text"
-              placeholder="探検のタイトルを入力"
+              placeholder="観光のタイトルを入力"
               value={tripTitle}
               onChange={(e) => setTripTitle(e.target.value)}
               style={{
@@ -1099,11 +1099,11 @@ const sortedFilteredMyTravelCourses = useMemo(() => {
             <div style={styles.buttonContainer}>
               <Button onClick={addPlan} style={styles.addButton}>
                 <Plus style={{ width: '1.25rem', height: '1.25rem' }} />
-                探検先を追加
+                観光先を追加
               </Button>
               <Button onClick={deletePlan} style={styles.deleteButton}>
                 <Minus style={{ width: '1.25rem', height: '1.25rem' }} />
-                探検先を削除
+                観光先を削除
               </Button>
             </div>
           </div>
@@ -1135,7 +1135,7 @@ const sortedFilteredMyTravelCourses = useMemo(() => {
             onMouseDown={(e) => (e.currentTarget.style.transform = "scale(0.95)")}
             onMouseUp={(e) => (e.currentTarget.style.transform = "scale(1.05)")}
           >
-            探検を登録
+            観光を登録
           </button>
         </div>
         </div>
@@ -1157,7 +1157,7 @@ const sortedFilteredMyTravelCourses = useMemo(() => {
                             <button
                               style={styles.controlButton}
                               onClick={() => addPlanAfter(id)}
-                              title="この探検の後に追加"
+                              title="この観光の後に追加"
                             >
                               <div style={styles.buttonIcon}>
                                 <PlusCircle size={16} color="var(--kure-blue)" />
@@ -1167,7 +1167,7 @@ const sortedFilteredMyTravelCourses = useMemo(() => {
                               <button
                                 style={styles.controlButton}
                                 onClick={() => removePlan(id)}
-                                title="この探検を削除"
+                                title="この観光を削除"
                               >
                                 <div style={styles.buttonIcon}>
                                   <MinusCircle size={16} color="var(--kure-red)" />
@@ -1263,7 +1263,7 @@ const sortedFilteredMyTravelCourses = useMemo(() => {
             <div>
             <div style={styles.tagContainer as React.CSSProperties}>
                 <div style={styles.tagTitleContainer as React.CSSProperties}>
-                <div style={styles.tagTitle}>探検地リスト</div>
+                <div style={styles.tagTitle}>観光地リスト</div>
                 <div style={styles.underline}></div>
                 </div>
                 {/* フィルターと検索のコンテナ */}
@@ -1295,7 +1295,7 @@ const sortedFilteredMyTravelCourses = useMemo(() => {
         <div style={styles.searchContainer as React.CSSProperties}>
           <input
             type="text"
-            placeholder="探検地を検索..."
+            placeholder="観光地を検索..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             style={styles.searchInput}
@@ -1523,7 +1523,7 @@ const sortedFilteredMyTravelCourses = useMemo(() => {
           <div style={{ display: "flex", flexDirection: "column", marginTop: "12px" }}>
     <div style={styles.tagContainer as React.CSSProperties}>
       <div style={{ ...styles.tagTitleContainer as React.CSSProperties, paddingLeft: "6px" }}>
-        <div style={styles.tagTitle}>セットした探検</div>
+        <div style={styles.tagTitle}>セットした観光</div>
         <div style={styles.underline}></div>
   </div>
 
@@ -1564,7 +1564,7 @@ const sortedFilteredMyTravelCourses = useMemo(() => {
             onMouseDown={(e) => (e.currentTarget.style.transform = "scale(0.95)")}
             onMouseUp={(e) => (e.currentTarget.style.transform = "scale(1.05)")}
           >
-            この探検を解除
+            この観光を解除
           </button>
             {/* 🔵 探検ルートを見る ボタン */}
           <button
@@ -1592,7 +1592,7 @@ const sortedFilteredMyTravelCourses = useMemo(() => {
             onMouseDown={(e) => (e.currentTarget.style.transform = "scale(0.95)")}
             onMouseUp={(e) => (e.currentTarget.style.transform = "scale(1.05)")}
           >
-            探検ルートを見る
+            観光ルートを見る
           </button>
         </div>
           <h2 style={{ fontSize: "24px", fontWeight: "bold", color: "var(--kure-blue)" }}>
@@ -1748,7 +1748,7 @@ const sortedFilteredMyTravelCourses = useMemo(() => {
           <div style={{ display: "flex", flexDirection: "column", marginTop: "12px" }}>
     <div style={styles.tagContainer as React.CSSProperties}>
       <div style={{ ...styles.tagTitleContainer as React.CSSProperties, paddingLeft: "6px" }}>
-        <div style={styles.tagTitle}>あなたの探検</div>
+        <div style={styles.tagTitle}>あなたの観光</div>
         <div style={styles.underline}></div>
       </div>
               {/* 検索欄 */}
@@ -1757,7 +1757,7 @@ const sortedFilteredMyTravelCourses = useMemo(() => {
                 <div style={styles.searchContainer as React.CSSProperties}>
                   <input
                     type="text"
-                    placeholder="探検のタイトルを検索..."
+                    placeholder="観光のタイトルを検索..."
                     value={searchQueryYourCourse}
                     onChange={(e) => setSearchQueryYourCourse(e.target.value)}
                     style={styles.searchInput}
@@ -1781,7 +1781,7 @@ const sortedFilteredMyTravelCourses = useMemo(() => {
                 <div style={styles.searchContainer as React.CSSProperties}>
                   <input
                     type="text"
-                    placeholder="探検地を検索..."
+                    placeholder="観光地を検索..."
                     value={searchQueryYourSpot}
                     onChange={(e) => setSearchQueryYourSpot(e.target.value)}
                     style={styles.searchInput}
@@ -1866,7 +1866,7 @@ const sortedFilteredMyTravelCourses = useMemo(() => {
     onMouseDown={(e) => (e.currentTarget.style.transform = "scale(0.95)")}
     onMouseUp={(e) => (e.currentTarget.style.transform = "scale(1.05)")}
   >
-    この探検をセット
+    この観光をセット
   </button>
 
   {/* 🔵 探検ルートを見る ボタン */}
@@ -1895,7 +1895,7 @@ const sortedFilteredMyTravelCourses = useMemo(() => {
     onMouseDown={(e) => (e.currentTarget.style.transform = "scale(0.95)")}
     onMouseUp={(e) => (e.currentTarget.style.transform = "scale(1.05)")}
   >
-    探検ルートを見る
+    観光ルートを見る
   </button>
 </div>
           <h2 style={{ fontSize: "24px", fontWeight: "bold", color: "var(--kure-blue)" }}>
@@ -2043,7 +2043,7 @@ const sortedFilteredMyTravelCourses = useMemo(() => {
           <div style={{ display: "flex", flexDirection: "column", marginTop: "12px" }}>
     <div style={styles.tagContainer as React.CSSProperties}>
       <div style={{ ...styles.tagTitleContainer as React.CSSProperties, paddingLeft: "6px" }}>
-        <div style={styles.tagTitle}>みんなの探検</div>
+        <div style={styles.tagTitle}>みんなの観光</div>
         <div style={styles.underline}></div>
       </div>
               {/* 検索欄 */}
@@ -2052,7 +2052,7 @@ const sortedFilteredMyTravelCourses = useMemo(() => {
                 <div style={styles.searchContainer as React.CSSProperties}>
                   <input
                     type="text"
-                    placeholder="探検のタイトルを検索..."
+                    placeholder="観光のタイトルを検索..."
                     value={searchQueryCourse}
                     onChange={(e) => setSearchQueryCourse(e.target.value)}
                     style={styles.searchInput}
@@ -2076,7 +2076,7 @@ const sortedFilteredMyTravelCourses = useMemo(() => {
                 <div style={styles.searchContainer as React.CSSProperties}>
                   <input
                     type="text"
-                    placeholder="探検地を検索..."
+                    placeholder="観光地を検索..."
                     value={searchQuerySpot}
                     onChange={(e) => setSearchQuerySpot(e.target.value)}
                     style={styles.searchInput}
@@ -2161,7 +2161,7 @@ const sortedFilteredMyTravelCourses = useMemo(() => {
     onMouseDown={(e) => (e.currentTarget.style.transform = "scale(0.95)")}
     onMouseUp={(e) => (e.currentTarget.style.transform = "scale(1.05)")}
   >
-    この探検をセット
+    この観光をセット
   </button>
 
   {/* 🔵 探検ルートを見る ボタン */}
@@ -2190,7 +2190,7 @@ const sortedFilteredMyTravelCourses = useMemo(() => {
     onMouseDown={(e) => (e.currentTarget.style.transform = "scale(0.95)")}
     onMouseUp={(e) => (e.currentTarget.style.transform = "scale(1.05)")}
   >
-    探検ルートを見る
+    観光ルートを見る
   </button>
 </div>
           <h2 style={{ fontSize: "24px", fontWeight: "bold", color: "var(--kure-blue)" }}>
