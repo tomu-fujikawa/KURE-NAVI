@@ -7,9 +7,9 @@ import { useState,useEffect, useMemo } from 'react';
 import Papa from "papaparse";
 import { Button } from './ui/button';
 import TimePickerContainer from './TimePickerContainer';
-import { Plus, Minus, PlusCircle, MinusCircle, Map, FileX } from 'lucide-react';
+import { Plus, Minus, PlusCircle, MinusCircle, Map } from 'lucide-react';
 import db from '../firebase';
-import { collection, getDocs, addDoc } from "firebase/firestore";  
+import { collection, getDocs, addDoc, doc, deleteDoc } from "firebase/firestore";  
 import { ChevronRight } from 'lucide-react'; // 矢印アイコンをインポート
 import React from 'react';
 import { useCallback } from 'react';
@@ -931,18 +931,14 @@ const filteredChoices = useMemo(() => {
     }
   };
 
-  const handleAddCourse = async() => {
+  const handleAddCourse = async () => {
     if (!tripTitle || family.length === 0) {
       alert("旅のタイトルを入力し、最低1つの観光地を追加してください。");
       return;
     }
-    
-    // 現在の時刻を取得
-    const currentTime = new Date().toISOString();
-    
-    // 登録データを整形
-    const registrationData: Course = {
-      id: currentTime, // 一意のIDとして現在時刻を使用
+
+    // 登録データを整形（idは一旦null）
+    const registrationData = {
       title: tripTitle,
       destinations: family.map(item => ({
         location_name: item.child?.location_name || '',
@@ -956,21 +952,45 @@ const filteredChoices = useMemo(() => {
       totalDistance: calculateTotalDistance(family.map(item => item.child as data)),
       totalTime: family[family.length - 1]?.time || ''
     };
-    
-    try {
-      // Firebaseへの登録
-      const docRef = await addDoc(collection(db, "posts"), registrationData);
-      
-      // ローカルのあなたの探検リストに追加
-      setMyTravelCourses(prev => [...prev, registrationData]);
 
-      // データ登録後にFirebaseから最新データを取得してセット
+    try {
+      // Firebase にデータを追加し、実際の ID を取得
+      const docRef = await addDoc(collection(db, "posts"), registrationData);
+      console.log("Document written with ID:", docRef.id);
+
+      // Firestore の ID を設定
+      const newCourse = { id: docRef.id, ...registrationData };
+
+      // ローカルの「あなたの探検リスト」に追加
+      setMyTravelCourses(prev => [...prev, newCourse]);
+
+      // データ登録後にFirebaseから最新データを取得
       await fetchUsers();
-      
+
       alert("プランが登録されました！");
     } catch (error) {
       console.error("登録エラー:", error);
       alert("プランの登録に失敗しました。");
+    }
+};
+
+  const handleDeleteCourse = async (courseId: string) => {
+    const confirmDelete = window.confirm("この観光を削除しますか？");
+    if (!confirmDelete) return;
+  
+    try {
+      await deleteDoc(doc(db, "posts", courseId)); // Firebase から削除
+  
+      // ローカルの state からも削除
+      setMyTravelCourses((prev) => prev.filter((course) => course.id !== courseId));
+  console.log("courseId",courseId)
+      // 最新のデータを取得
+      await fetchUsers();
+  
+      alert("観光が削除されました！");
+    } catch (error) {
+      console.error("削除エラー:", error);
+      alert("観光の削除に失敗しました。");
     }
   };
 
@@ -1913,7 +1933,35 @@ const sortedFilteredMyTravelCourses = useMemo(() => {
   >
     観光ルートを見る
   </button>
-</div>
+              {/* 🗑️ この観光を削除 ボタン */}
+              <button
+            onClick={() => handleDeleteCourse(course.id)}
+            style={{
+              padding: "12px 24px",
+              background: "linear-gradient(135deg, #FF0000, #e15757)",
+              color: "white",
+              border: "none",
+              borderRadius: "12px",
+              fontSize: "16px",
+              fontWeight: "bold",
+              cursor: "pointer",
+              transition: "transform 0.2s ease, box-shadow 0.2s ease",
+              boxShadow: "0px 6px 12px rgba(255, 0, 0, 0.3)",
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.transform = "scale(1.05)";
+              e.currentTarget.style.boxShadow = "0px 8px 16px rgba(255, 0, 0, 0.5)";
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.transform = "scale(1)";
+              e.currentTarget.style.boxShadow = "0px 6px 12px rgba(255, 0, 0, 0.3)";
+            }}
+            onMouseDown={(e) => (e.currentTarget.style.transform = "scale(0.95)")}
+            onMouseUp={(e) => (e.currentTarget.style.transform = "scale(1.05)")}
+          >
+            この観光を削除
+          </button>
+        </div>
           <h2 style={{ fontSize: "24px", fontWeight: "bold", color: "var(--kure-blue)" }}>
             {course.title} ({totalDistanceText})
           </h2>
@@ -1932,9 +1980,6 @@ const sortedFilteredMyTravelCourses = useMemo(() => {
             zIndex: 0, // スクロールバーのz-indexを設定
           }}
         >          
-        {/* border: "3px solid var(--kure-blue)",
-        borderRadius: "25px",
-        padding: "12px 0 12px 12px", */}
           {course.destinations.map((destination: data, index: number) => (
             <div key={"sightseeing" + courseIndex + index} style={{ display: "flex", flexDirection: "row", alignItems: "center", gap: "10px" }}>
               {/* 観光スポットカード */}
