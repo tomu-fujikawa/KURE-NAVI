@@ -918,6 +918,19 @@ const filteredChoices = useMemo(() => {
     setVisibleRows(prev => Math.max(INITIAL_ROWS, prev - ROW_INCREMENT));
   };
 
+  const fetchUsers = async () => {
+    try {
+      const querySnapshot = await getDocs(collection(db, "posts"));
+      const sightseeingData: Course[] = [];
+      querySnapshot.forEach((doc) => {
+        sightseeingData.push({ id: doc.id, ...doc.data() } as Course);
+      });
+      setSightseeingCourse(sightseeingData);
+    } catch (error) {
+      console.error("Error fetching sightseeing:", error);
+    }
+  };
+
   const handleAddCourse = async() => {
     if (!tripTitle || family.length === 0) {
       alert("旅のタイトルを入力し、最低1つの観光地を追加してください。");
@@ -950,6 +963,9 @@ const filteredChoices = useMemo(() => {
       
       // ローカルのあなたの探検リストに追加
       setMyTravelCourses(prev => [...prev, registrationData]);
+
+      // データ登録後にFirebaseから最新データを取得してセット
+      await fetchUsers();
       
       alert("プランが登録されました！");
     } catch (error) {
